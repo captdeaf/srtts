@@ -1,0 +1,47 @@
+# Load order:
+#
+# vim:set syntax=sh
+
+# Globals and constants:
+constants.lua
+globals.lua
+tts_globals.lua
+
+# Green Queue that everything uses.
+greenq.lua
+utils.lua
+
+# StarRealms-specific information.
+sr_cards.lua
+sr_assets.lua
+sr_decks.lua
+sr_load.lua
+
+# Game playing.
+game_teams.lua
+game_states.lua
+game_playing.lua
+game_effects.lua
+game_houserules.lua
+game_dumbai.lua
+
+# Dealing with TTS's PITA API.
+tts_cardhandling.lua
+tts_events.lua
+tts_indicators.lua
+tts_misc.lua
+tts_setup.lua
+tts_ui.lua
+tts_util.lua
+
+# TTS XML stuff.
+xml_utils.lua
+xml_ingame.lua
+xml_startmenu.lua
+
+# Launch everything
+main.lua
+
+# (And debug it all)
+debug_functions.lua
+debugengine.lua
