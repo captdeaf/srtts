@@ -239,7 +239,8 @@ function destroyCard(obj)
   obj.setDescription("DEAD")
   obj.setPosition({x="0", y="-10", z="0"})
   setPlayState("scrapped", obj.getGUID(), true)
-  destroyObject(obj)
+  -- destroyObject(obj)
+  obj.destruct()
 end
 
 function die(fmt, ...)
@@ -296,10 +297,14 @@ function returnObject(color, obj, origstate)
     obj.setRotation(rot)
   end
 end
+
 function isGameObject(obj)
-  local card = ALL_CARDS[obj.getName()]
-  if card then
-    return true
+  if obj.tag == "Deck" then return true end
+  if obj.tag == "Card" then
+    local card = ALL_CARDS[obj.getName()]
+    if card then
+      return true
+    end
   end
   return false
 end

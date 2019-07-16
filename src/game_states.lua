@@ -153,10 +153,6 @@ function endTurn()
         end
       end
     end
-    -- Empty player's hand.
-    for _, card in ipairs(dumpHand(color, false)) do
-        allcards[#allcards+1] = card
-    end
 
     -- Clear out musts and mays.
     GAMESTATE["players"][color]["musts"] = {}

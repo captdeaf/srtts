@@ -145,6 +145,12 @@ addCommand("push", "Push #{OUTFILE} to TTS via proxy") do
   sendEditor("newscript", body)
 end
 
+addCommand("exec", "Execute a file") do
+  die "Pass a file?" unless ARGV.length > 0
+  body = ARGF.read
+  sendEditor("exec", body)
+end
+
 addCommand("help", "help") do
   puts <<EOT
 Usage: #{$0} command [...args...]
@@ -157,7 +163,8 @@ EOT
   end
 end
 
-cmd = ARGV.pop or "help"
-if COMMANDS.has_key?(cmd) then
-  doCommand(cmd)
-end
+cmd = ARGV.shift
+puts "attempting #{cmd}"
+cmd = "help" unless COMMANDS.key?(cmd)
+
+doCommand(cmd)

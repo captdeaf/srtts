@@ -24,7 +24,7 @@ def tts_handle(client)
       if lasterr != err then
         errcount = 0
         lasterr = err
-        puts("!! #{lasterr}")
+        printErr(err)
       end
       errcount = errcount + 1
       if errcount == 10 then
@@ -58,9 +58,25 @@ def sendTTS(mid, args)
   sock.close()
 end
 
+def printErr(err)
+  foo, msg = err.split(/:/, 2)
+  unless foo =~ /\((\d+),(\d+)/
+    puts "Unknown error format '#{foo}' (#{err})"
+  end
+  lineno = $1
+  map = [0, "??"]
+  $linemaps.each do |lm|
+    break if lm[0] > lineno
+    map = lm
+  end
+  puts "#{map[1]} +#{lineno - map[0]}: #{msg}"
+end
+
 $linemaps = []
+$loaded = []
 def parseFile(body)
-  body.split(/\n/).each_with_index do |line, lnum|
+  $loaded = body.split(/\n/)
+  $loaded.each_with_index do |line, lnum|
     if line =~ /^##FILESTART:(\w+\.lua)/ then
       $linemaps << [lnum, $1]
     end

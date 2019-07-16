@@ -459,12 +459,17 @@ function groupDecks(color)
   local discs = {}
   local decks = {}
   for _, obj in ipairs(PLAYER_DECK_ZONE[color].getObjects()) do
-    if obj.is_face_down then
-      table.insert(decks, obj)
-    else
-      table.insert(discs, obj)
+    if isGameObject(obj) then
+      if obj.is_face_down then
+        printf("add deck %s:%s", obj.tag, obj.getGUID())
+        table.insert(decks, obj)
+      else
+        printf("add disc %s:%s", obj.tag, obj.getGUID())
+        table.insert(discs, obj)
+      end
     end
   end
+  printf("groupDecks %s: %d, %d", color, #discs, #decks)
   if discs and #discs > 1 then
     group(discs)
   end
@@ -500,9 +505,10 @@ function moveDiscardToDeck(color, params)
   })
 end
 
-function discardAllCards(color, allcards, docopy)
+function discardAllCards(color, allcards)
   local pdata = PDATA[color]
 
+  printf("%s discarding %d cards", color, #allcards)
 
   moveAllGroupThen(allcards, {
     position = pdata["discardloc"],
@@ -597,9 +603,8 @@ function moveAllGroupThen(objs, params)
       obj.use_hands = true
       obj.setLock(false)
     end
-    local deck = group(objs)
     waitUntilSettled(function()
-      if callback then callback(deck) end
+      if callback then callback(objs) end
     end)
   end
   greenWait({
