@@ -115,13 +115,14 @@ function addBasesToPlay(color, objs)
   local allguids = getPlayState(color, "other")
   local allbases = {}
   local newguids = {}
-  local goodguids = filterCards(allguids, function(o) return not isScrapped(o) end)
 
-  for _, guid in ipairs(goodguids) do
-    local base = getObjectFromGUID(guid)
-    if base then
-      newguids[#newguids+1] = guid
-      allbases[#allbases+1] = base
+  for _, guid in ipairs(allguids) do
+    if not isScrapped(guid) then
+      local base = getObjectFromGUID(guid)
+      if base then
+        newguids[#newguids+1] = guid
+        allbases[#allbases+1] = base
+      end
     end
   end
 

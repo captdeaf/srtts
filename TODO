@@ -1,0 +1,21 @@
+TODO for SR TTS:
+----------------
+
+Assets (Trin):
+  Frontiers: Images from Trin.
+  Slick and shiny new images for all cards from SR official
+  Table background and player area images?
+
+SR Cards (VV):
+  Frontiers: card definitions
+  Double Ally addition
+  scrap->discard at endofturn
+
+Code for TTS handling:
+  allies: track guids, and special cases for heroes.
+  UI for trade row and moused-over card - screw ALT zoom!
+  scrap "pile" - a card can be scrapped and regenerates in discard pile at end of turn.
+
+
+
+

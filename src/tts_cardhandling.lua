@@ -214,7 +214,6 @@ function renderBases(color, allbases)
       local rownum = 3
       if card["type"] == OUTPOST then rownum = 1 end
       if card["type"] == BASE then rownum = 2 end
-      if not rownum then rownum = 3 end
       table.insert(grid[rownum], base)
     end
   end
@@ -251,6 +250,7 @@ function renderCardGrid(cards, zone, maxrows, max_per_row, start_zoff)
   local colleft = -0.5 + (coldiff/2.0)
 
   for idx, card in ipairs(cards) do
+    card.setLock(true)
     local cardrot = 180.0
     local cdef = ALL_CARDS[card.getName()]
     if cdef then
@@ -461,15 +461,12 @@ function groupDecks(color)
   for _, obj in ipairs(PLAYER_DECK_ZONE[color].getObjects()) do
     if isGameObject(obj) then
       if obj.is_face_down then
-        printf("add deck %s:%s", obj.tag, obj.getGUID())
         table.insert(decks, obj)
       else
-        printf("add disc %s:%s", obj.tag, obj.getGUID())
         table.insert(discs, obj)
       end
     end
   end
-  printf("groupDecks %s: %d, %d", color, #discs, #decks)
   if discs and #discs > 1 then
     group(discs)
   end
@@ -507,8 +504,6 @@ end
 
 function discardAllCards(color, allcards)
   local pdata = PDATA[color]
-
-  printf("%s discarding %d cards", color, #allcards)
 
   moveAllGroupThen(allcards, {
     position = pdata["discardloc"],

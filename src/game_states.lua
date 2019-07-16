@@ -246,18 +246,28 @@ end
 
 function countPlayerCards(color)
   local count = 0
+  local counted = {}
 
   for _, obj in ipairs(getAllObjects()) do
     if obj.tag == "Deck" then
       for _, item in ipairs(obj.getObjects()) do
-        if not isScrapped(obj.getGUID()) then
-          if item["description"] == color then
-            count = count + 1
+        if item["description"] == color then
+          count = count + 1
+        end
+        if item.guid and item.guid ~= "" then
+          if counted[item.guid] then
+            die("item guid duplicate in countPlayerCards: %s", item.guid)
           end
+          counted[item.guid] = true
         end
       end
     elseif obj.tag == "Card" and obj.getDescription() == color then
       count = count + 1
+      local guid = obj.getGUID()
+      if counted[guid] then
+        die("item guid duplicate in countPlayerCards: %s", guid)
+      end
+      counted[guid] = true
     end
   end
 
