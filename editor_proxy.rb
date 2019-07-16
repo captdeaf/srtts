@@ -59,25 +59,33 @@ def sendTTS(mid, args)
 end
 
 def printErr(err)
-  foo, msg = err.split(/:/, 2)
+  fn, foo, msg = err.split(/:/, 3)
   unless foo =~ /\((\d+),(\d+)/
     puts "Unknown error format '#{foo}' (#{err})"
+    return
   end
-  lineno = $1
-  map = [0, "??"]
-  $linemaps.each do |lm|
-    break if lm[0] > lineno
-    map = lm
+  lineno = $1.to_i
+  col = $2.to_i
+  fname = "??"
+  fline = lineno
+  $linemaps.each do |lnum, name|
+    if lnum < lineno then
+      fname = name
+      fline = lnum
+    else
+      break
+    end
   end
-  puts "#{map[1]} +#{lineno - map[0]}: #{msg}"
+  puts "#{fname} +#{lineno - fline}: #{msg}"
 end
 
 $linemaps = []
 $loaded = []
 def parseFile(body)
-  $loaded = body.split(/\n/)
+  $loaded = body.lines.map &:chomp
   $loaded.each_with_index do |line, lnum|
-    if line =~ /^##FILESTART:(\w+\.lua)/ then
+    if line =~ /^-- ##FILESTART:(\w+\.lua)/ then
+      puts "#{$1}: #{lnum}"
       $linemaps << [lnum, $1]
     end
   end

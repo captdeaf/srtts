@@ -4,7 +4,8 @@ CARDASSETS = {
     rows = 7, cols = 10,
     -- width = 4320, height = 4200,
     cards = {
-      "Viper", "Scout", "Explorer", "Federation Shuttle", "Cutter",
+      -- Using scout, viper, shuttle from sharper frontier image set below.
+      nil, nil, nil, "Federation Shuttle", "Cutter",
       "Survey Ship", "Imperial Frigate", "Imperial Fighter", "Trade Bot", "Supply Bot",
 
       "Missile Bot", "Trade Pod", "Blob Wheel", "Blob Fighter", "Trading Post",
@@ -17,7 +18,7 @@ CARDASSETS = {
       "Fleet HQ", "Dreadnaught", "Battlecruiser", "Stealth Needle", "Missile Mech",
 
       "Mech World", "Machine Base", "Junkyard", "Brain World", "Battle Mech",
-      "The Hive", "Blob Mothership", "Blob World", "Blob Carrier", "Battle Blob",
+      "The Hive", "Mothership", "Blob World", "Blob Carrier", "Battle Blob",
 
       "Star Fortress", "Spike Pod", "Patrol Bot", "Death World", "Customs Frigate",
       "Cargo Launch", "Capitol World", "Border Fort", "CEO Torres", "Special Ops Director",
@@ -88,7 +89,7 @@ CARDASSETS = {
       "Convoy Bot", "Emperor's Dreadnaught", "Falcon", "Frontier Ferry", "Gunship",
 
       "Heavy Cruiser", "Lancer", "Leviathan", "Mech Cruiser", "Mining Mech",
-      "Moonwurm", "Parasite", "Patrol Cutter", "Peace Keeper", "Predator",
+      "Moonwurm", "Parasite", "Patrol Cutter", "Peacekeeper", "Predator",
 
       "Ravager", "Repair Bot", "Solar Skiff", "Star Barge", "Swarmer",
       "The Wrecker", "Warning Beacon", "Bioformer", "Central Station", "Command Center",
@@ -115,6 +116,27 @@ CARDASSETS = {
     cards = {
       "Alliance Transport", "Blob Bot", "Coalition Messenger", "Embassy Base",
       "Exchange Point", "Lookout Post", "Trade Star", "Union Stronghold",
+    }
+  },
+  {
+    uri = "https://steamuserimages-a.akamaihd.net/ugc/772847971586853961/A8FC93B299727B5F6785C2D886186F90C21E97D8/",
+    rows = 7, cols = 10,
+    -- width = 4320, height = 4200,
+    cards = {
+      nil, "Scout", "Viper", "Explorer", "Blob Alpha",
+      "Blob Miner", "Burrower", "Crusher", "Hive Queen", "Infested Moon",
+
+      "Moonwurm Hatchling", "Nesting Ground", "Pulverizer", "Spike Cluster", "Stinger",
+      "Swarm Cluster", "Builder Bot", "Conversion Yard", "Defense System", "Destroyer Bot",
+
+      "Enforcer Mech", "Integration Port", "Nanobot Swarm", "Neural Nexus", "Plasma Bot",
+      "Reclamation Station", "Repair Mech", "Captured Outpost", "Cargo Craft", "Farm Ship",
+
+      "Frontier Hawk", "Hammerhead", "Imperial Flagship", "Jamming Terminal", "Light Cruiser",
+      "Orbital Gun Platform", "Siege Fortress", "Warpgate Cruiser", "Federation Battleship", "Federation Cruiser",
+
+      "Frontier Runner", "Gateship", "Ion Station", "Long Hauler", "Mobile Market",
+      "Orbital Shuttle", "Outland Station", "Patrol Boat", "Transit Nexus",
     }
   },
 }

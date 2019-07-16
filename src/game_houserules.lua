@@ -672,9 +672,15 @@ function checkRules()
 
   GAMESTATE["canstart"] = false
 
-  if ((MENU_CHOICES["decks"]["Core"] or 0) < 1) and
-     ((MENU_CHOICES["decks"]["Colony Wars"] or 0) < 1) then
-    setMenuFailReason("Either Core or Colony Wars must be present, or you won't have enough cards!")
+  local has_full_set = false
+  for _, v in ipairs(AVAILABLE_DECKS) do
+    if (MENU_CHOICES["decks"][v.name] or 0) > 1 then
+      has_full_set = true
+    end
+  end
+  -- {name = "Core", count = 1, fullset=true},
+  if not has_full_set then
+    setMenuFailReason("A full set (Core, Colony Wars, or Frontier) must be present, or you won't have enough cards!")
     return false
   end
 

@@ -148,18 +148,33 @@ function loadCardAssets()
   end
 end
 
+MISSING_CARDS = {}
 function sanityCheckDecks()
-  local done = {}
   for dname, deck in pairs(DECKS) do
     for _, cardname in ipairs(deck) do
       if not ALL_CARDS[cardname] then
-        local k = dname .. cardname
-        if not done[k] then
-          die("Deck %s, card %s, missing.", dname, cardname)
-          done[k] = true
-        end
+        MISSING_CARDS[dname] = MISSING_CARDS[dname] or {}
+        MISSING_CARDS[dname][cardname] = true
       end
     end
+  end
+  if hasAny(MISSING_CARDS) then
+    -- AVAILABLE_DECKS must all be valid and have nothing missing.
+    for _, ad in ipairs(AVAILABLE_DECKS) do
+      if MISSING_CARDS[ad.name] then
+        die("Deck %s marked available has missing cards!", ad.name)
+      end
+    end
+  end
+end
+
+function printMissingCards()
+  for dname, cards in pairs(MISSING_CARDS) do
+    local cnames = {}
+    for v in pairs(cards) do
+      table.insert(cnames, v)
+    end
+    printf("%s: %s", dname, table.concat(cnames, ", "))
   end
 end
 

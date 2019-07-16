@@ -151,6 +151,28 @@ addCommand("exec", "Execute a file") do
   sendEditor("exec", body)
 end
 
+require 'csv'
+addCommand("generatedecks", "Read in a CSV and spit out a deck listing") do
+  alllines = CSV.parse(ARGF.read)
+  headers = alllines.shift.map { |i| i.chomp.downcase.to_sym }
+  cstruct = Struct.new(*headers)
+  allcards = alllines.map { |line| cstruct.new(*line) }
+
+  alldecks = {}
+  allcards.each do |card|
+    if ["Ship", "Base"].include?(card.type)
+      unless ["Scout", "Viper", "Explorer"].include?(card.name)
+        alldecks[card.set] ||= []
+        alldecks[card.set] += [card.name.chomp] * card.qty.to_i(10)
+      end
+    end
+  end
+  puts "DECKS = {}"
+  alldecks.each do |name, cards|
+    puts "DECKS[\"#{name}\"] = {#{cards.map {|c| "\"#{c}\""}.join(", ")}}"
+  end
+end
+
 addCommand("help", "help") do
   puts <<EOT
 Usage: #{$0} command [...args...]
