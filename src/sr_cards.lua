@@ -31,8 +31,13 @@ EFFECTS:
     mc={effects}: Machine Cult ally Effects
     se={effects}: Star Empire ally Effects
     bb={effects}: Blob ally Effects
-    union={ {{FAC1,FAC2},{effects}},...} - union of allies, e.g: SE _or_ TF
-             (e.g: tf= can also be written as union={ {{TF},{...}} })
+    union={{FAC1,FAC2},{effects}} - union of allies, e.g: SE _or_ TF
+    combo={{FACS1,FACS2},{effects}} - AND of ors of allies. Typically for double combo:
+          e.g: Frontiers.
+             tf= can also be written as combo={{{TF}},{...}}
+             union={{BB,TF},{...}} as combo={{{TF,BB}},{...}}
+             frontier double BB as:
+             combo={{{BB},{BB}},{...}}
 
   Unique Effects:
     uniq={"name",...args} - unique execution in code path.
@@ -71,10 +76,10 @@ CARDDEFS = {
   { "Central Station", BASE, {TF}, 4, {def=5, t=2, check={"my:base", 3, {a=4, draw=1}}}},
   { "Death World", BASE, {BB}, 7, {def=6, d=4, scrapcycle={from={S_HAND, S_PLAYER_DISCARD}, check={"factions", {SE, TF, MC}}}}},
   { "Embassy Base", BASE, {SE,TF}, 8, {def=6, onactivate={draw=2, mustdiscard=1}}},
-  { "Exchange Point", BASE, {BB, MC}, 6, {def=7, d=2, union={{{MC,BB}, {choose={{tradescrap={count=1}},{mayscrap={from={S_HAND, S_PLAYER_DISCARD}, count=1}}}}}}}},
+  { "Exchange Point", BASE, {BB, MC}, 6, {def=7, d=2, union={{MC,BB}, {choose={{tradescrap={count=1}},{mayscrap={from={S_HAND, S_PLAYER_DISCARD}, count=1}}}}}}},
   { "Fleet HQ", BASE, {SE}, 8, {def=8, ontag={"play:ship", {d=1}}}},
   { "Loyal Colony", BASE, {TF}, 7, {def=6, t=3, d=3, a=3}},
-  { "Orbital Platform", BASE, {SE}, 3, {def=4, recycle={count=1}}, se={d=3}},
+  { "Orbital Platform", BASE, {SE}, 3, {def=4, recycle={count=1}, se={d=3}}},
   { "Plasma Vent", BASE, {BB}, 6, {def=5, d=4, buyto={"play:bb", 1, TO_HAND}, onscrap={destroybase=1}}},
   { "Starbase Omega", BASE, {SE}, 4, {def=6, check={"play:base", 1, {oppdiscard=1}, true}}},
   { "Starmarket", BASE, {TF}, 4, {def=6, check={"play:base", 1, {choose={{a=5},{t=3}}}, true}}},
@@ -82,15 +87,15 @@ CARDDEFS = {
   { "Storage Silo", BASE, {TF}, 2, {def=3, a=2, tf={t=2}}},
   { "The Hive", BASE, {BB}, 5, {def=5, d=3, bb={draw=1}}},
   { "Trade Wheel", BASE, {BB}, 3, {def=5, t=1, bb={d=2}}},
-  { "Union Cluster", BASE, {SE,BB}, 7, {def=8,d=4,union={{{SE,BB}, {draw=1}}}}},
+  { "Union Cluster", BASE, {SE,BB}, 7, {def=8,d=4,union={{SE,BB}, {draw=1}}}},
   { "Union Stronghold", BASE, {BB, SE}, 5, {def=5, d=3, bb={tradescrap={count=1}}, se={oppdiscard=1}}},
 
-  { "Alliance Landing", OUTPOST, {TF,SE}, 5, {def=5, t=2, union={{{TF,SE},{d=2}}}}},
+  { "Alliance Landing", OUTPOST, {TF,SE}, 5, {def=5, t=2, union={{TF,SE},{d=2}}}},
   { "Battle Station", OUTPOST, {MC}, 3, {def=5, onscrap={d=5}}},
   { "Border Fort", OUTPOST, {MC}, 4, {def=5, choose={{t=1},{d=2}}, mc={mayscrap={from={S_HAND, S_PLAYER_DISCARD}, count=1}}}},
   { "Brain World", OUTPOST, {MC}, 8, {def=6, scrapcycle={from={S_HAND, S_PLAYER_DISCARD}, count=2}}},
   { "Capitol World", OUTPOST, {TF}, 8, {def=6, a=6, draw=1}},
-  { "Coalition Fortress", OUTPOST, {MC,TF}, 6, {def=6, t=2, union={{{TF,MC}, {choose={{d=2},{a=3}}}}}}},
+  { "Coalition Fortress", OUTPOST, {MC,TF}, 6, {def=6, t=2, union={{TF,MC}, {choose={{d=2},{a=3}}}}}},
   { "Command Center", OUTPOST, {SE}, 4, {def=4, t=2, ontag={"play:ship:se", {d=2}}}},
   { "Defense Center", OUTPOST, {TF}, 5, {def=5, choose={{a=3},{d=2}}, tf={d=2}}},
   { "Factory World", OUTPOST, {TF}, 8, {def=6, t=3, uniq={"nextbuyto", ANY, TO_HAND}}},
@@ -114,7 +119,7 @@ CARDDEFS = {
   { "The Incinerator", OUTPOST, {MC}, 8, {def=6, mayscrap={from={S_HAND, S_PLAYER_DISCARD}, count=2}, mc={ontag={"scrap:handordiscard", {d=2}, true}}}},
   { "The Oracle", OUTPOST, {MC}, 4, {def=5, mayscrap={from={S_HAND}, count=1}, mc={d=3}}},
   { "Trading Post", OUTPOST, {TF}, 3, {def=4, choose={{a=1},{t=1}}, onscrap={d=3}}},
-  { "Unity Station", OUTPOST, {BB,MC}, 7, {def=6,tradescrap={count=1},mayscrap={from={S_HAND, S_PLAYER_DISCARD}, count=1},union={{{TF,MC}, {d=4}}}}},
+  { "Unity Station", OUTPOST, {BB,MC}, 7, {def=6,tradescrap={count=1},mayscrap={from={S_HAND, S_PLAYER_DISCARD}, count=1},union={{TF,MC}, {d=4}}}},
   { "Warning Beacon", OUTPOST, {MC}, 2, {def=2, d=2, buyto={"play:mc", 1, TO_HAND}}},
   { "War World", OUTPOST, {SE}, 5, {def=4, d=3, se={d=4}}},
 
@@ -167,7 +172,7 @@ CARDDEFS = {
   { "Aging Battleship", SHIP, {SE}, 5, {d=5, se={draw=1}, onscrap={d=2, draw=2}}},
   { "Alliance Frigate", SHIP, {TF,SE}, 3, {d=4,se={d=3},tf={a=4}}},
   { "Alliance Transport", SHIP, {SE,TF}, 2, {t=2, se={oppdiscard=1}, tf={a=4}}},
-  { "Assault Pod", SHIP, {SE,BB}, 2,{d=3, union={{{BB,SE}, {draw=1}}}}},
+  { "Assault Pod", SHIP, {SE,BB}, 2,{d=3, union={{BB,SE}, {draw=1}}}},
   { "Battle Barge", SHIP, {SE}, 4, {d=5, oppdiscard=1, check={"my:base", 2, {d=3, uniq={"mayreturn", {BASE, OUTPOST}, 1}}}}},
   { "Battle Blob", SHIP, {BB}, 6, {d=8, bb={draw=1}, onscrap={d=4}}},
   { "Battle Bot", SHIP, {MC}, 1, {d=2, mayscrap={from={S_HAND}, count=1}, mc={d=2}}},
@@ -183,7 +188,7 @@ CARDDEFS = {
   { "Cargo Launch", SHIP, {SE}, 1, {draw=1, onscrap={t=1}}},
   { "Cargo Pod", SHIP, {BB}, 3, {t=3, bb={d=3}, onscrap={d=3}}},
   { "Coalition Freighter", SHIP, {TF,MC}, 4, {t=3, tf={uniq={"nextbuyto", SHIP, TO_TOP}}, mc={mayscrap={from={S_HAND, S_PLAYER_DISCARD}, count=1}}}},
-  { "Coalition Messenger", SHIP, {MC,TF}, 3, {t=2, union={{{MC,TF}, {discardtotop={count=1, check={"cost", 5}}}}}}},
+  { "Coalition Messenger", SHIP, {MC,TF}, 3, {t=2, union={{MC,TF}, {discardtotop={count=1, check={"cost", 5}}}}}},
   { "Colony Seed Ship", SHIP, {TF}, 5, {t=3, d=3, a=3, buyto={"play:tf", 1, TO_HAND}}},
   { "Command Ship", SHIP, {TF}, 8, {draw=2, a=4, d=5, tf={destroybase=1}}},
   { "Construction Hauler", SHIP, {TF}, 6, {a=3, t=2, draw=1, tf={uniq={"nextbuyto", BASES, TO_PLAY}}}},
@@ -250,14 +255,14 @@ CARDDEFS = {
   { "Blob Miner", SHIP, {BB}, 2, {t=3, tradescrap={count=1}, onscrap={d=2}}},
   { "Burrower", SHIP, {BB}, 3, {d=5, bb={draw=1}, onscrap={uniq={"freecard", {}, 4, TO_DISCARD}}}},
   { "Crusher", SHIP, {BB}, 3, {d=6, bb={t=2}}},
-  { "Hive Queen", SHIP, {BB}, 7, {d=7, draw=1, bb={d=3}, combo={{{bb=2}, {d=3}}}}},
-  { "Infested Moon", BASE, {BB}, 6, {def=5, d=4, bb={draw=1}, combo={{{bb=2}, {draw=1}}}}},
-  { "Moonwurm Hatchling", SHIP, {BB}, 4, {choose={{t=3},{destroybase=1}}, bb={d=3}, combo={{{bb=2},{d=3}}}}},
+  { "Hive Queen", SHIP, {BB}, 7, {d=7, draw=1, bb={d=3}, combo={{{BB},{BB}}, {d=3}}}},
+  { "Infested Moon", BASE, {BB}, 6, {def=5, d=4, bb={draw=1}, combo={{{BB},{BB}}, {draw=1}}}},
+  { "Moonwurm Hatchling", SHIP, {BB}, 4, {choose={{t=3},{destroybase=1}}, bb={d=3}, combo={{{BB},{BB}},{d=3}}}},
   { "Nesting Ground", BASE, {BB}, 4, {def=5, t=2, bb={d=4}}},
   { "Pulverizer", SHIP, {BB}, 5, {tradescrap={count=1, effects={d="cost"}}, bb={draw=1}}},
   { "Spike Cluster", BASE, {BB}, 2, {def=3, d=2, bb={t=1}}},
   { "Stinger", SHIP, {BB}, 1, {d=3, bb={d=3}, onscrap={t=1}}},
-  { "Swarm Cluster", BASE, {BB}, 8, {def=8, d=5, bb={d=3}, combo={{{bb=2}, {d=3}}}}},
+  { "Swarm Cluster", BASE, {BB}, 8, {def=8, d=5, bb={d=3}, combo={{{BB},{BB}}, {d=3}}}},
 
   { "Builder Bot", SHIP, {MC}, 1, {t=1, mayscrap={from={S_PLAYER_DISCARD}, count=1}, mc={t=1}, onscrap={d=2}}},
   { "Conversion Yard", OUTPOST, {MC}, 5, {def=4, scrapfor={from={S_HAND}, count=1, effects={d=4}, cardmessage="scraps %s for 4 damage"}}},
@@ -278,7 +283,7 @@ CARDDEFS = {
   { "Hammerhead", SHIP, {SE}, 5, {d=3, draw=1, oppdiscard=1, se={draw=1, mustdiscard=1}}},
   { "Imperial Flagship", SHIP, {SE}, 8, {d=7, draw=2, se={oppdiscard=1}}},
   { "Jamming Terminal", BASE, {SE}, 5, {def=6, d=2, oppdiscard=1}},
-  { "Light Cruiser", SHIP, {SE}, 3, {d=4, oppdiscard=1, se={d=2}, combo={{{se=2},{draw=1}}}}},
+  { "Light Cruiser", SHIP, {SE}, 3, {d=4, oppdiscard=1, se={d=2}, combo={{{SE},{SE}},{draw=1}}}},
   { "Orbital Gun Platform", OUTPOST, {SE}, 4, {def=4, d=3, onscrap={t=3}}},
   { "Siege Fortress", OUTPOST, {SE}, 7, {def=5, d=5, se={d=4}}},
   { "Warpgate Cruiser", SHIP, {SE}, 6, {mayuse={count=-1, effects={d=2}, from={S_HAND}, to=TO_DISCARD, cardmessage="discards %s for 2 damage"}, draw=1, se={draw=1}}},
@@ -287,7 +292,7 @@ CARDDEFS = {
   { "Federation Cruiser", SHIP, {TF}, 5, {d=5, a=4, tf={d=2, a=2}}},
   { "Frontier Runner", SHIP, {TF}, 1, {t=2, a=2}},
   { "Gateship", SHIP, {TF}, 6, {uniq={"freecard", {SHIP, OUTPOST, BASE}, 6, TO_TOP}, tf={a=5}}},
-  { "Ion Station", OUTPOST, {TF}, 5, {def=5, t=2, tf={t=1}, combo={{{tf=2},{d=4,a=4}}}}},
+  { "Ion Station", OUTPOST, {TF}, 5, {def=5, t=2, tf={t=1}, combo={{{TF},{TF}},{d=4,a=4}}}},
   { "Long Hauler", SHIP, {TF}, 4, {t=3, tf={t=2}, onscrap={uniq={"nextbuyto", BASES, TO_TOP}}}},
   { "Mobile Market", OUTPOST, {TF}, 4, {def=4, t=2, onscrap={a=2, draw=1, uniq={"recoverme", TO_DISCARD}}}},
   { "Orbital Shuttle", SHIP, {TF}, 2, {t=3, check={"my:base", 2, {a=4, draw=1}}}},

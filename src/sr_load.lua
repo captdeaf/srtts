@@ -23,6 +23,12 @@ function loadCards()
     checkCardInfo(cardinfo) -- raises errors if cardinfo is invalid.
     local name, cardtype, factions, cost, effects = unpack(cardinfo)
 
+    if cardtype ~= EVENT then
+      if #cardinfo ~= 5 then
+        die("Invalid # of entries for %s: %d", tostring(name), #cardinfo)
+      end
+    end
+
     ALL_CARDS[name] = {
       name = name,
       type = cardtype,

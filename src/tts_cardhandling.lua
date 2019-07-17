@@ -616,37 +616,3 @@ function moveThen(obj, pos, callback)
     callback = qWaitFor("moveThen", cleanup),
   })
 end
-
-function doReturnCards(color, reason, sels)
-  local done = false
-  for _, obj in ipairs(sels) do
-    if not isScrapped(obj) then
-      done = true
-      local owner = obj.getDescription()
-      if isPlaying(owner) then
-        local psis = getPlayState(owner, "interactables")
-        local guid = obj.getGUID()
-        psis[guid] = nil
-
-        if isMember(getPlayState(owner, "ships"), guid) then
-          removeFromList(getPlayState(owner, "ships"), guid)
-        end
-        if isMember(getPlayState(owner, "other"), guid) then
-          removeFromList(getPlayState(owner, "other"), guid)
-        end
-      end
-      sendToHand(obj.getDescription(), obj)
-      announce(color, "returned %s to %s's hand", obj.getName(), playerName(obj.getDescription()))
-    end
-  end
-
-  if done then
-    local psi = getPlayState(color, "interactables")
-    local guid = reason.getGUID()
-    psi[guid]["mayreturn"] = nil
-    if not hasAny(psi[guid]) then
-      psi[guid] = nil
-    end
-  end
-end
-

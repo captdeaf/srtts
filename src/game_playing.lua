@@ -136,28 +136,28 @@ function addBasesToPlay(color, objs)
   renderBases(color, allbases)
 end
 
-function rebuildAllies(color)
+function getAllies(color)
   -- Called on in-play cards being scrapped.
   local allies = {}
-  allies[BB] = false
-  allies[TF] = false
-  allies[SE] = false
-  allies[MC] = false
+  allies[BB] = {}
+  allies[TF] = {}
+  allies[SE] = {}
+  allies[MC] = {}
   -- I don't think anything uses UA as a faction ...
-  allies[UA] = false
+  allies[UA] = {}
 
   for guid, cardname in pairs(getPlayState(color, "played")) do
     local obj = getObjectFromGUID(guid)
     if not isScrapped(guid) then
       local cdef = ALL_CARDS[cardname]
       for _, faction in ipairs(cdef["factions"]) do
-        allies[faction] = true
+        table.insert(allies[faction], guid)
       end
       if obj and obj.getName() ~= cardname then
         -- Stealth Tower / Needle
         local rdef = ALL_CARDS[obj.getName()]
         for _, faction in ipairs(rdef["factions"]) do
-          allies[faction] = true
+          table.insert(allies[faction], guid)
         end
       end
     end
@@ -165,11 +165,15 @@ function rebuildAllies(color)
 
   for faction, val in pairs(getPlayState(color, "effectallies")) do
     if val then
-      allies[faction] = true
+      for _, guid in pairs(val) do
+        if guid:sub(1,4) == "hero" or not isScrapped(guid) then
+          table.insert(allies[faction], guid)
+        end
+      end
     end
   end
 
-  setPlayState(color, "allies", allies)
+  return allies
 end
 
 function applyCard(color, cardname, obj, isnew, choice)
@@ -677,29 +681,56 @@ function applyTags(color, card, isnew)
   end
 end
 
-function triggerAllyEffects(color, factions)
+function hasAllies(guid, allies, factands)
+  local counted = {}
+  -- can't count itself.
+  counted[guid] = true
+
+  for _, factors in ipairs(factands) do
+    local found = false
+    for _, fact in ipairs(factors) do
+      for _, allyguid in ipairs(allies[fact]) do
+        if not counted[allyguid] then
+          found = true
+          counted[allyguid] = true
+          break
+        end
+      end
+      if found then break end
+    end
+    if not found then return false end
+  end
+  return true
+end
+
+function triggerAllyEffects(color)
   -- needs is a list of {
-  --   {{factions}, effects, guid}
+  --   {{andfacts}, effects, guid}
+  --   andfacts being a list of {orfacts}
+  --   e.g:
+  --     {{{SE}},{draw=1}} draws for a single Star Empire ally.
+  --     {{{SE,BB}},{draw=1}} draws for either a star empire or blob ally
+  --     {{{SE},{BB}},{draw=1}} draws only if have both a blob AND star empire ally.
   -- }
   local needs = getPlayState(color, "needally")
+  local allies = getAllies(color)
   if needs and #needs > 0 then
-    local facs = {}
-    for _, faction in ipairs(factions) do
-      facs[faction] = true
-    end
     local newneeds = {}
     for _, need in ipairs(needs) do
-      local hasally = false
-      for _, fac in ipairs(need[1]) do
-        if facs[fac] then hasally = true end
+      if #need ~= 3 then
+        whine("#need %d, not 3?", #need)
+        printAll(need, "need")
       end
-      if hasally and not isScrapped(need[3]) then
-        local obj = getObjectFromGUID(need[3])
-        local cardname = obj.getName()
-        local card = ALL_CARDS[cardname]
-        applyEffects(color, obj, card, need[2], obj.getPosition(), "Ally", false)
-      else
-        table.insert(newneeds, need)
+      local factands, effs, guid = unpack(need)
+      if not isScrapped(guid) then
+        if hasAllies(guid, allies, factands) then
+          local obj = getObjectFromGUID(guid)
+          local cardname = obj.getName()
+          local card = ALL_CARDS[cardname]
+          applyEffects(color, obj, card, effs, obj.getPosition(), "Ally", false)
+        else
+          table.insert(newneeds, need)
+        end
       end
     end
 
@@ -1267,7 +1298,6 @@ function sendCardToScrap(color, obj)
   local owner = obj.getDescription()
   if owner ~= "T" and owner ~= "X" then
     addTag(color, "scrap", "Scrap")
-    rebuildAllies(color)
     local expected = GAMESTATE["players"][color]["card_count"]
     GAMESTATE["players"][color]["card_count"] = expected - 1
   end
@@ -1311,6 +1341,39 @@ function clickAuthTokenReal(ctoken, color, alt_click)
     end
     targetteam["authority"] = authority
     ctoken.editButton({index=0, label=tostring(authority)})
+  end
+end
+
+function doReturnCards(color, reason, sels)
+  local done = false
+  for _, obj in ipairs(sels) do
+    if not isScrapped(obj) then
+      done = true
+      local owner = obj.getDescription()
+      if isPlaying(owner) then
+        local psis = getPlayState(owner, "interactables")
+        local guid = obj.getGUID()
+        psis[guid] = nil
+
+        if isMember(getPlayState(owner, "ships") or {}, guid) then
+          removeFromList(getPlayState(owner, "ships"), guid)
+        end
+        if isMember(getPlayState(owner, "other") or {}, guid) then
+          removeFromList(getPlayState(owner, "other"), guid)
+        end
+      end
+      sendToHand(obj.getDescription(), obj)
+      announce(color, "returned %s to %s's hand", obj.getName(), playerName(obj.getDescription()))
+    end
+  end
+
+  if done then
+    local psi = getPlayState(color, "interactables")
+    local guid = reason.getGUID()
+    psi[guid]["mayreturn"] = nil
+    if not hasAny(psi[guid]) then
+      psi[guid] = nil
+    end
   end
 end
 

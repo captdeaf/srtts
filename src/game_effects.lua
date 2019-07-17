@@ -64,10 +64,6 @@ function describeEffects(effects, cardname)
   local ret = {}
   local done = {}
 
-  if cardname == "Star Fortress" or cardname == "Embassy Base" then
-    printAll(effects, cardname .. ".effects")
-  end
-
   local append = function(str, ...)
     local fmtstr = str:format(...)
     ret[#ret+1] = fmtstr
@@ -154,7 +150,7 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
   if issub then
     -- "issub": A sub-action, cannot have additional actions (e.g: scrap can't
     -- have ally effects)
-    cardname = cardname .. "+" .. issub
+    cardname = cardname .. "+" .. tostring(issub)
   else
     issub = false
   end
@@ -424,16 +420,25 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
     done["check"] = true
   end
 
-  local allies = getPlayState(color, "allies")
+  local newally = false
 
   if effects["ally"] then
+    newally = true
     done["ally"] = true
+    local effally = getPlayState(color, "effectallies")
     -- Mech world, heroes.
-    triggerAllyEffects(color, effects["ally"])
-    logEffect(color, cardname, "allies %s for the rest of the turn", concatAnd(effects["ally"]))
+    if card.type == HERO then
+      logEffect(color, cardname, "allies %s for the rest of the turn", concatAnd(effects["ally"]))
+    else
+      logEffect(color, cardname, "allies %s", concatAnd(effects["ally"]))
+    end
     for _, faction in ipairs(effects["ally"]) do
-      setPlayState(color, "allies", faction, true)
-      setPlayState(color, "effectallies", faction, true)
+      effally[faction] = effally[faction] or {}
+      if card.type == HERO then
+        table.insert(effally[faction], "hero+" .. obj.getGUID() .. "+" .. tostring(issub))
+      else
+        table.insert(effally[faction], obj.getGUID() .. "+" .. tostring(issub))
+      end
     end
   end
 
@@ -441,51 +446,39 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
   done["se"] = true
   done["bb"] = true
   done["mc"] = true
-
   done["def"] = true
 
   if not issub then
-    if obj.getName() ~= cardname then
-      -- Stealth Needle and Tower.
-      local realcard = ALL_CARDS[obj.getName()]
-      triggerAllyEffects(color, realcard["factions"])
-    end
-    triggerAllyEffects(color, card["factions"])
-
     local needs = getPlayState(color, "needally")
 
+    -- Convert allies to "ally needs"
     local allymap = { mc = MC, se = SE, bb = BB, tf = TF }
     for key, faction in pairs(allymap) do
       if effects[key] then
-        if allies[faction] then
-          applyEffects(color, obj, card, effects[key], position, "Ally", false)
-        else
-          table.insert(needs, {{faction}, effects[key], obj.getGUID()})
-        end
+        table.insert(needs, {{{faction}}, effects[key], obj.getGUID()})
       end
     end
 
     if effects["union"] and #effects["union"] > 0 then
       done["union"] = true
-      -- union is a list of {factions,effects}
-      for _, union in ipairs(effects["union"]) do
-        local hasally = false
-        for _, faction in ipairs(union[1]) do
-          if allies[faction] then hasally = true end
-        end
-        if hasally then
-          applyEffects(color, obj, card, union[2], position, "Union", false)
-        else
-          table.insert(needs, {union[1], union[2], obj.getGUID()})
-        end
-      end
+      local union = effects["union"]
+      table.insert(needs, {{union[1]}, union[2], obj.getGUID()})
+    end
+
+    if effects["combo"] and #effects["combo"] > 0 then
+      done["combo"] = true
+      local combo = effects["combo"]
+
+      table.insert(needs, {combo[1], combo[2], obj.getGUID()})
     end
 
     setPlayState(color, "played", obj.getGUID(), cardname)
 
-    for _, faction in ipairs(card["factions"]) do
-      setPlayState(color, "allies", faction, true)
-    end
+    newally = true
+  end
+
+  if newally then
+    triggerAllyEffects(color)
   end
 
   if hasAny(interactions) then

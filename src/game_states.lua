@@ -318,11 +318,8 @@ function newPlayState(color)
     other = {},
     -- needally is [faction] = {guid, guid} map
     needally = {},
-    -- allies is for cards in play as well as effects, regenerated
-    -- on cards being scrapped.
-    allies = {},
     -- effectallies is for effects, e.g: Heroes that give ally effects for rest
-    -- of turn on scrap.
+    -- of turn on scrap, Machine World's ally all.
     effectallies = {},
     -- Interactables: Interactable cards (e.g: Select target base to destroy)
     -- Format: {GUID={what, count}}
