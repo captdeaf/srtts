@@ -93,6 +93,7 @@ end
 function cleanupGame()
   qCleanup()
   QUESTIONS = {}
+  CURRENT_QUESTION = {}
   QUESTION_CHECKS = {}
   GAMESTATE = duplicate(GAMESTATE_CLEAN)
   Global.setDecals({})

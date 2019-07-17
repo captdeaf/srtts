@@ -1152,7 +1152,6 @@ function doRunInteractable(color, obj, interactions, selname)
     return false
   end
   if name == "mayreturn" then
-    -- {"freecard", {SHIP}, 100, TO_TOP}
     if not args[2] or #args[2] < 1 then
       return die("invalid mayreturn")
     end
@@ -1164,26 +1163,6 @@ function doRunInteractable(color, obj, interactions, selname)
         owners = GAMESTATE["order"],
       },
       function(sels) doReturnCards(color, obj, sels) end)
-  end
-  if name == "freecard" then
-    -- {"freecard", {SHIP}, 100, TO_TOP}
-    local typestr = "a card"
-    if args[2] and #args[2] > 0 then
-      typestr = describeTypes(args[2], "or")
-    end
-    local qstr = sprintf("Pick %s of cost %d or less", typestr, args[3])
-    if args[3] > 30 then
-      qstr = sprintf("Pick %s", typestr)
-    end
-
-    askSelectCard(obj.getGUID(), color, qstr,
-      {
-        min = 0, max = 1,
-        types = args[2],
-        cost = args[3],
-        owners = {"T", "X"},
-      },
-      function(sels) doAcquireFreeCard(color, obj, args[4], sels) end)
   end
   if name == "activate" then
     local choices = {}
@@ -1280,18 +1259,8 @@ function doScrapCardForEffects(color, obj, source, dest, origstate)
 end
 
 function doAcquireFreeCard(color, giver, dest, sels)
-  local psi = getPlayState(color, "interactables")
-  local guid = giver.getGUID()
-  if psi[guid] and psi[guid]["freecard"] then
-    for _, obj in ipairs(sels) do
-      doBuy(color, obj, false, dest)
-    end
-    psi[guid]["freecard"] = nil
-    if not hasAny(psi[guid]) then
-      psi[guid] = nil
-    end
-  else
-    return die("No freecard interactables in doAcquireFreeCard?")
+  for _, obj in ipairs(sels) do
+    doBuy(color, obj, false, dest)
   end
 end
 

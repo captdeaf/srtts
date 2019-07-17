@@ -51,6 +51,7 @@ DONE:
     Clear the Turn UI immediately on end turn, rather than waiting 'til after draw, etc.
 
 Card effects:
+  ** freecard on scrap doesn't work: Burrower in frontiers.
   allies: track+count unique guids, and special cases for heroes. (to enable counting
           for combo allies)
   combo ally effect

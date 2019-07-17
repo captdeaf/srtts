@@ -382,7 +382,24 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
       tweakPlayState("damage", function(d) return d + amt end)
       done["u.reclamation"] = true
     elseif uwhat == "freecard" then
-      interactions["freecard"] = uparams
+      -- {"freecard", {SHIP}, 100, TO_TOP}
+      local typestr = "a card"
+      if uparams[2] and #uparams[2] > 0 then
+        typestr = describeTypes(uparams[2], "or")
+      end
+      local qstr = sprintf("Pick %s of cost %d or less", typestr, uparams[3])
+      if uparams[3] > 30 then
+        qstr = sprintf("Pick %s", typestr)
+      end
+
+      askSelectCard(obj.getGUID(), color, qstr,
+        {
+          min = 0, max = 1,
+          types = uparams[2],
+          cost = uparams[3],
+          owners = {"T", "X"},
+        },
+        function(sels) doAcquireFreeCard(color, obj, uparams[4], sels) end)
       done["u.freecard"] = true
     elseif uwhat == "stealthtower" then
       interactions["stealthtower"] = uparams
