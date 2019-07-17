@@ -161,6 +161,7 @@ function endTurn()
   callHouseRules("onTurnEnd")
 
   -- Queue nextTurn for when it's all settled.
+  waitUntilSettled(waitUntilSettled)
   qdo(nextTurn, false)
 end
 
@@ -186,7 +187,7 @@ function nextTurn(isnewgame)
     local doneteam = GAMESTATE["playing"]
     local handsize = getHouseRule("getHandSize", doneteam)
     for color, _ in pairs(getTeamPlayers(doneteam)) do
-      drawToPlayer(color, handsize)
+      qdo(drawToPlayer, color, handsize)
     end
   end
 
@@ -242,6 +243,7 @@ end
 function countPlayerCards(color)
   local count = 0
   local counted = {}
+  local good = true
 
   for _, obj in ipairs(getAllObjects()) do
     if obj.tag == "Deck" then
@@ -251,19 +253,24 @@ function countPlayerCards(color)
         end
         if item.guid and item.guid ~= "" then
           if counted[item.guid] then
-            die("item guid duplicate in countPlayerCards: %s", item.guid)
+            whine("countPlayerCards(%s) dupe: %s.%s(%s) - %s vs %s", color, item.guid, item.name, item.description, "item", counted[item.guid])
+            good = false
           end
-          counted[item.guid] = true
+          counted[item.guid] = sprintf("item.%s.%s", item.name, item.description)
         end
       end
     elseif obj.tag == "Card" and obj.getDescription() == color then
       count = count + 1
       local guid = obj.getGUID()
       if counted[guid] then
-        die("item guid duplicate in countPlayerCards: %s", guid)
+        whine("countPlayerCards(%s) dupe: %s.%s(%s) - %s vs %s", color, guid, obj.getName(), obj.getDescription(), "item", counted[guid])
+        good = false
       end
-      counted[guid] = true
+      counted[guid] = sprintf("object.%s.%s", obj.getName(), obj.getDescription())
     end
+  end
+  if not good then
+    die("Invalid countPlayerCards")
   end
 
   return count

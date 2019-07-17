@@ -18,21 +18,17 @@ DebugEngine = {
   end,
   wrapToplevel = function(name, func)
     return function(...)
-      local tmp = {...}
-      local n = select('#', ...)
+      DebugEngine.used[name] = true
       local stackcopy = DebugEngine.stack
       DebugEngine.stack = {name}
-      local fn = function() func(unpack(tmp, 1, n)) end
-      local good, result = xpcall(fn, DebugEngine.handler)
-      if not good then
-        die("Error in %s: %s. Stopping.", name, tostring(result))
-      end
+      local rets = {func(...)}
       DebugEngine.stack = stackcopy
-      return result
+      return unpack(rets)
     end
   end,
   wrap = function(name, func)
     return function(...)
+      DebugEngine.used[name] = true
       local atstart = #DebugEngine.stack
       table.insert(DebugEngine.stack, name)
       local rets = {func(...)}
@@ -56,6 +52,16 @@ DebugEngine = {
     print(table.concat(DebugEngine.stack, "->"))
   end,
   stack = {},
+  used = {},
+  printUnused = function()
+    local ret = {}
+    for name, istoplevel in pairs(DEBUG_FUNCTIONS) do
+      if not DebugEngine.used[name] then
+        table.insert(ret, name)
+      end
+    end
+    printAll(ret)
+  end,
 }
 
 function safecall(fn)

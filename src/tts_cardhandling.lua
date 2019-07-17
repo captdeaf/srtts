@@ -621,16 +621,17 @@ function doReturnCards(color, reason, sels)
   local done = false
   for _, obj in ipairs(sels) do
     if not isScrapped(obj) then
-      -- Avoid GUID conflicts.
       done = true
-      local psis = getPlayState(obj.getDescription(), "interactables")
-      psis[obj.getGUID()] = nil
+      if isPlaying(obj.getDescription()) then
+        local psis = getPlayState(obj.getDescription(), "interactables")
+        psis[obj.getGUID()] = nil
 
-      local card = ALL_CARDS[obj.getName()]
-      if card["type"] == SHIP then
-        removeFromList(getPlayState(color, "ships"), obj.getGUID())
-      else
-        removeFromList(getPlayState(color, "other"), obj.getGUID())
+        local card = ALL_CARDS[obj.getName()]
+        if card["type"] == SHIP then
+          removeFromList(getPlayState(obj.getDescription(), "ships"), obj.getGUID())
+        else
+          removeFromList(getPlayState(obj.getDescription(), "other"), obj.getGUID())
+        end
       end
       sendToHand(obj.getDescription(), obj)
       announce(color, "returned %s to %s's hand", obj.getName(), playerName(obj.getDescription()))

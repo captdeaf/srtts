@@ -1,28 +1,42 @@
+
+
+BUGS:
+-----
+Undescribed effect for star fortress: 1
+doAttackEnemyCard: bugs if you "attack" a card in enemy hand.
+Clicking "Play Star Realms" while unable to start gets a broken menu
+2headed hydra doesn't start (AI confused?)
+unscripted editing of authority doesn't work.
+
 TODO for SR TTS:
 ----------------
 
 Assets (Trin):
-  Frontiers: Images from Trin.
+  Frontiers: Images from Trin, up-side-right for bases (instead of left)
   Slick and shiny new images for all cards from SR official
   Table background and player area images?
 
-SR Cards (VV):
-  Frontiers: card definitions
-  Double Ally addition
-  scrap->discard at endofturn
+Card effects:
+  allies: track+count unique guids, and special cases for heroes. (to enable counting
+          for combo allies)
 
-Code for TTS handling:
-  allies: track guids, and special cases for heroes.
+QOL:
   UI for trade row and moused-over card - screw ALT zoom!
-  scrap "pile" - a card can be scrapped and regenerates in discard pile at end of turn.
   Clear the Turn UI immediately on end turn, rather than waiting 'til after draw, etc.
 
 Frontiers:
   combo ally effect
-  uniq: reclamationstation - 3 damage per scrapped card.
+    (Requires ally cleanup for guid tracking, hero special case)
   uniq: recoverme: Mobile Market returns to discard pile at end of turn if scrapped.
+    (2 stages: onturnend={uniq={"giftcard", "mobilemarket"}}
+
+Bosses:
+  Assets
+  Rules implementation (built on top of house rules)
+  Scenario selection
 
 DONE:
+  uniq: reclamationstation - 3 damage per scrapped card.
   tradescrap => cardUse
   discardtotop check type
   mayscrap, mustscrap => carduse
@@ -31,3 +45,7 @@ DONE:
 
   Frontiers:
     uniq: scrapcycle for cost damage (scrap trade card for 1 damage per cost, or from hand or discard)
+    card definitions
+
+  BUGS:
+    return base / doReturnCards: setting play state for a returned card fails.

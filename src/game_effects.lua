@@ -29,11 +29,18 @@ USE_TEMPLATES["mayscrap"] = {
   cardmessage = "scraps %s",
 }
 
-USE_TEMPLATES["scrapcycle"] = {
+USE_TEMPLATES["scrapfor"] = {
   from = {S_HAND},
   to = TO_SCRAP,
   count = 1,
-  cardmessage = "scraps %s",
+}
+
+USE_TEMPLATES["scrapcycle"] = {
+  id = "scrapcycle",
+  from = {S_HAND},
+  to = TO_SCRAP,
+  count = 1,
+  cardmessage = "scrapcycles %s",
   effects = {draw=1},
 }
 
@@ -103,6 +110,8 @@ function describeEffects(effects, cardname)
     local u = effects["uniq"]
     if u[1] == "blobworld" then
       append("draw 1 card for every blob card played.")
+    elseif u[1] == "reclamation" then
+      append("gain 3 damage for every card you've scrapped this turn (including this one)")
     else
       append("unique '%s' effect (not added to describe yet)", effects["uniq"][1])
     end
@@ -120,6 +129,7 @@ function describeEffects(effects, cardname)
       done[k] = true
       local params = duplicate(v)
       params = mergeTables({params, effects[k]})
+      params.id = params.id or cardname
       append(describeCardUse(params))
     end
   end
@@ -338,6 +348,7 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
       done[k] = true
       local params = duplicate(v)
       mergeTables({params, effects[k]})
+      params.id = params.id or cardname
       if v.must then
         addMustUse(color, obj, params)
       else
@@ -356,6 +367,12 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
         addMust(color, "draw", count)
       end
       done["u.blobworld"] = true
+    elseif uwhat == "reclamation" then
+      -- Add one since reclamation is triggered before scrap tag is added for the station.
+      local amt = (getTag(color, "scrap") + 1) * 3
+      announce(color, "scraps reclamation station for %d damage", amt)
+      tweakPlayState("damage", function(d) return d + amt end)
+      done["u.reclamation"] = true
     elseif uwhat == "freecard" then
       interactions["freecard"] = uparams
       done["u.freecard"] = true
