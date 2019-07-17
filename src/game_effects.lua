@@ -112,6 +112,10 @@ function describeEffects(effects, cardname)
       append("draw 1 card for every blob card played.")
     elseif u[1] == "reclamation" then
       append("gain 3 damage for every card you've scrapped this turn (including this one)")
+    elseif u[1] == "giftcards" then
+      local good, gifts = convertCustomCardnames(u[2])
+      if not good then die("bad giftcards?") end
+      append("obtain %s in %s", concatAnd(gifts, "and"), u[3])
     else
       append("unique '%s' effect (not added to describe yet)", effects["uniq"][1])
     end
@@ -134,10 +138,14 @@ function describeEffects(effects, cardname)
     end
   end
 
-  for k, _ in pairs(effects) do
+  for k, v in pairs(effects) do
     if not done[k] then
-      whine("Undescribed effect for %s: %s", cardname, k)
-      append("undescribed: %s", k)
+      if v.desc then
+        append(v.desc)
+      else
+        whine("Undescribed effect for %s: %s", cardname, k)
+        append("undescribed: %s", k)
+      end
     end
   end
 
@@ -382,6 +390,12 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
     elseif uwhat == "mayreturn" then
       interactions["mayreturn"] = uparams
       done["u.mayreturn"] = true
+    elseif uwhat == "giftcards" then
+      local good, gifts = convertCustomCardnames(uparams[2])
+      if not good then die("bad giftcards?") end
+      spawnCardsForPlayer(color, gifts, uparams[3])
+      GAMESTATE.players[color].card_count = GAMESTATE.players[color].card_count + #gifts
+      done["u.giftcards"] = true
     elseif uwhat == "nextbuyto" then
       -- Hrmmmmmm... next card, next ship, next base.
       -- ANY clears SHIP and BASES.
@@ -442,6 +456,7 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
     end
   end
 
+  done["scrapok"] = true
   done["tf"] = true
   done["se"] = true
   done["bb"] = true

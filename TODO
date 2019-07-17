@@ -24,10 +24,6 @@ Assets (Trin):
 QOL:
   UI for trade row and moused-over card - screw ALT zoom!
 
-Frontiers:
-  uniq: recoverme: Mobile Market returns to discard pile at end of turn if scrapped.
-    (2 stages: onturnend={uniq={"giftcard", "mobilemarket"}}
-
 Bosses:
   Assets
   Rules implementation (built on top of house rules)
@@ -44,6 +40,8 @@ DONE:
   Frontiers:
     uniq: scrapcycle for cost damage (scrap trade card for 1 damage per cost, or from hand or discard)
     card definitions
+    Mobile Market returns to discard pile at end of turn if scrapped.
+      (2 stages: ontag={"turnend", {uniq={"giftcard", "mobilemarket", TO_DISCARD}}}
 
   BUGS:
     return base / doReturnCards: setting play state for a returned card fails.

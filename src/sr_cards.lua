@@ -294,7 +294,7 @@ CARDDEFS = {
   { "Gateship", SHIP, {TF}, 6, {uniq={"freecard", {SHIP, OUTPOST, BASE}, 6, TO_TOP}, tf={a=5}}},
   { "Ion Station", OUTPOST, {TF}, 5, {def=5, t=2, tf={t=1}, combo={{{TF},{TF}},{d=4,a=4}}}},
   { "Long Hauler", SHIP, {TF}, 4, {t=3, tf={t=2}, onscrap={uniq={"nextbuyto", BASES, TO_TOP}}}},
-  { "Mobile Market", OUTPOST, {TF}, 4, {def=4, t=2, onscrap={a=2, draw=1, uniq={"recoverme", TO_DISCARD}}}},
+  { "Mobile Market", OUTPOST, {TF}, 4, {def=4, t=2, onscrap={a=2, draw=1, ontag={desc="Mobile Market returned to discard at end of turn", "turn:end", {scrapok=true, uniq={"giftcards", "Mobile Market", TO_DISCARD}}}}}},
   { "Orbital Shuttle", SHIP, {TF}, 2, {t=3, check={"my:base", 2, {a=4, draw=1}}}},
   { "Outland Station", BASE, {TF}, 3, {def=4, choose={{t=1},{a=3}}, onscrap={draw=1}}},
   { "Patrol Boat", SHIP, {TF}, 3, {d=4, a=3, tf={a=2}}},

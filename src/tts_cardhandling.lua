@@ -8,6 +8,29 @@ function spawnExplorer(newgame)
   updatePlayState()
 end
 
+function spawnCardsForPlayer(color, names, location)
+  local pdata = PDATA[color]
+  local rot = {x=0.0, y=180.0, z=180.0}
+  local pos = pdata.deckloc
+
+  if location == TO_DISCARD then
+    pos = pdata.discardloc
+    rot.z = 0.0
+  elseif location == TO_HAND then
+    pos = PLAYER_ZONE[color].getPosition()
+  end
+
+  for _, name in ipairs(names) do
+    spawnCard({
+      cardname = name,
+      position = pos,
+      rotation = rot,
+      owner = color,
+    })
+  end
+  updatePlayState()
+end
+
 function spawnDeckAt(owner, cards, params)
   local fulldeckjs = makeDeckJSON(cards, owner)
 

@@ -479,6 +479,11 @@ function tryEndTurn(player)
   announce(color, "ends turn.")
 
   clearTurnUIs()
+  -- Trigger turn:end ontags.
+  setPlayState("ready", color, true)
+  for col, _ in pairs(getPlayState("ready")) do
+    addTag(col, "turn:end")
+  end
   -- Add endTurn to end of qdo queue.
   qdo(endTurn)
 end

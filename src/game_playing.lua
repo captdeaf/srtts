@@ -153,7 +153,7 @@ function getAllies(color)
       for _, faction in ipairs(cdef["factions"]) do
         table.insert(allies[faction], guid)
       end
-      if obj and obj.getName() ~= cardname then
+      if obj and obj.tag == "Card" and obj.getName() ~= cardname then
         -- Stealth Tower / Needle
         local rdef = ALL_CARDS[obj.getName()]
         for _, faction in ipairs(rdef["factions"]) do
@@ -640,6 +640,11 @@ function addTag(color, name, desc)
             local card = ALL_CARDS[cardname]
             if card then
               applyEffects(color, obj, card, tageffect, obj.getPosition(), desc, false)
+            end
+          elseif tageffect.scrapok then
+            local card = ALL_CARDS[cardname]
+            if card then
+              applyEffects(color, GameObjects.PLAY_BOX, card, tageffect, GameZones.SCRAP.getPosition(), desc, false)
             end
           end
           if ondef["limit"] > 0 then

@@ -12,7 +12,7 @@ function ttsJSObject(params)
     Grid = false,
     Snap = true,
     IgnoreFoW = false,
-    Autoraise = false,
+    Autoraise = true,
     Sticky = true,
     Tooltip = true,
     GridProjection = false,
