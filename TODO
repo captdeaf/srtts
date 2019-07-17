@@ -2,7 +2,9 @@
 
 BUGS:
 -----
-Undescribed effect for star fortress: 1
+** Cards sometimes vanish when player is almost out of cards.
+   e.g: <= 5 cards total in discard+deck, one will vanish?
+   (triggers die of sanity check).
 doAttackEnemyCard: bugs if you "attack" a card in enemy hand.
 Clicking "Play Star Realms" while unable to start gets a broken menu
 2headed hydra doesn't start (AI confused?)
@@ -22,7 +24,6 @@ Card effects:
 
 QOL:
   UI for trade row and moused-over card - screw ALT zoom!
-  Clear the Turn UI immediately on end turn, rather than waiting 'til after draw, etc.
 
 Frontiers:
   combo ally effect
@@ -49,3 +50,7 @@ DONE:
 
   BUGS:
     return base / doReturnCards: setting play state for a returned card fails.
+    Undescribed effect for star fortress, embassy base, machine base: 1
+
+  QOL:
+    Clear the Turn UI immediately on end turn, rather than waiting 'til after draw, etc.

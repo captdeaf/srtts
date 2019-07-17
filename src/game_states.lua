@@ -115,7 +115,7 @@ function dealFirstRound()
     dealToTrade(idx, td)
   end
 
-  qdo(nextTurn, true)
+  qdo(nextTurn, nil)
 end
 
 function newMays()
@@ -158,11 +158,15 @@ function endTurn()
     end
   end
 
+  local curteam = GAMESTATE.playing
+
+  GAMESTATE.playing = nil
+
   callHouseRules("onTurnEnd")
 
   -- Queue nextTurn for when it's all settled.
   waitUntilSettled(waitUntilSettled)
-  qdo(nextTurn, false)
+  qdo(nextTurn, curteam)
 end
 
 function clearPlayerCards(color)
@@ -182,11 +186,10 @@ function clearPlayerCards(color)
   end
 end
 
-function nextTurn(isnewgame)
-  if not isnewgame then
-    local doneteam = GAMESTATE["playing"]
-    local handsize = getHouseRule("getHandSize", doneteam)
-    for color, _ in pairs(getTeamPlayers(doneteam)) do
+function nextTurn(lastteam)
+  if lastteam then
+    local handsize = getHouseRule("getHandSize", lastteam)
+    for color, _ in pairs(getTeamPlayers(lastteam)) do
       qdo(drawToPlayer, color, handsize)
     end
   end

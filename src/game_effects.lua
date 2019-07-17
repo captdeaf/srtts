@@ -64,6 +64,10 @@ function describeEffects(effects, cardname)
   local ret = {}
   local done = {}
 
+  if cardname == "Star Fortress" or cardname == "Embassy Base" then
+    printAll(effects, cardname .. ".effects")
+  end
+
   local append = function(str, ...)
     local fmtstr = str:format(...)
     ret[#ret+1] = fmtstr

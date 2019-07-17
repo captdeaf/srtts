@@ -163,10 +163,7 @@ end
 
 function clearTurnUIs()
   for col in allSeatedColors() do
-    if not isPlaying(col) then
-      local turnkey = "turn" .. col
-      hideUI(turnkey)
-    end
+    hideUI("turn" .. col)
   end
 end
 

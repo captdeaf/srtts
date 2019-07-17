@@ -25,7 +25,7 @@ function spawnDeckAt(owner, cards, params)
   spawnObjectJSON(args)
 end
 
-function respawnDeckFrom(color, grouplist, position, is_face_down, params)
+function respawnDeckFrom(color, grouplist, params)
   local cardnames = {}
   for _, obj in ipairs(grouplist) do
     if obj.tag == "Card" then
@@ -46,16 +46,16 @@ function respawnDeckFrom(color, grouplist, position, is_face_down, params)
     y = PDATA[color]["yrot"],
     z = 0.0,
   }
-  if is_face_down then rot["z"] = 180.0 end
+  if params.is_face_down then rot["z"] = 180.0 end
 
   -- deck.shuffle() should do it, but just in case that actually waits
   -- a frame or so ...
   shuffle(cardnames)
 
   spawnDeckAt(color, cardnames, {
-    position = position,
+    position = params.position,
     rotation = rot,
-    callback_function = params["callback"],
+    callback_function = params.callback,
   })
 end
 
@@ -337,8 +337,6 @@ function highlightInteractables()
             else
               obj.highlightOn(COLORS["SCRAPPABLE"])
             end
-          elseif not types["scrap"] then
-            return die("Invalid interactables?")
           end
         end
       end
@@ -480,7 +478,9 @@ function moveDiscardToDeck(color, params)
     end
   end
 
-  respawnDeckFrom(color, togroup, pdata["deckloc"], true, {
+  respawnDeckFrom(color, togroup, {
+    position = pdata.deckloc,
+    is_face_down = true,
     callback = qWaitFor("movediscardtodeck", function(deck)
       deck.shuffle()
       if params["callback"] then
@@ -622,15 +622,17 @@ function doReturnCards(color, reason, sels)
   for _, obj in ipairs(sels) do
     if not isScrapped(obj) then
       done = true
-      if isPlaying(obj.getDescription()) then
-        local psis = getPlayState(obj.getDescription(), "interactables")
-        psis[obj.getGUID()] = nil
+      local owner = obj.getDescription()
+      if isPlaying(owner) then
+        local psis = getPlayState(owner, "interactables")
+        local guid = obj.getGUID()
+        psis[guid] = nil
 
-        local card = ALL_CARDS[obj.getName()]
-        if card["type"] == SHIP then
-          removeFromList(getPlayState(obj.getDescription(), "ships"), obj.getGUID())
-        else
-          removeFromList(getPlayState(obj.getDescription(), "other"), obj.getGUID())
+        if isMember(getPlayState(owner, "ships"), guid) then
+          removeFromList(getPlayState(owner, "ships"), guid)
+        end
+        if isMember(getPlayState(owner, "other"), guid) then
+          removeFromList(getPlayState(owner, "other"), guid)
         end
       end
       sendToHand(obj.getDescription(), obj)

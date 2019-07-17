@@ -145,6 +145,7 @@ function isPlaying(color)
 end
 
 function getTeamPlayers(team)
+  if not team then return {} end
   return GAMESTATE["teams"][team]["colors"]
 end
 

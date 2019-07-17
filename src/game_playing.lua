@@ -1158,8 +1158,7 @@ function doRunInteractable(color, obj, interactions, selname)
       })
     end
     table.insert(choices, { "Cancel", nil })
-    local desc = describeEffects(args, cardname)
-    askQuestion(obj.getGUID(), color, cardname .. " Activate " .. desc, choices)
+    askQuestion(obj.getGUID(), color, cardname .. " Activate", choices)
   end
   if name == "scrap" then
     -- I think this is only used by dumbai?
