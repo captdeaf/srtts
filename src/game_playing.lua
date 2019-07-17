@@ -239,6 +239,13 @@ end
 function describeCardUse(use, youmay)
   -- Target:
   -- "scrap", "discard", etc.
+  if youmay == nil then
+    if use.must then
+      youmay = "must"
+    else
+      youmay = "may"
+    end
+  end
   local action = "move %s to " .. use.to
   if use.to == TO_SCRAP then
     action = "scrap %s"
@@ -273,6 +280,8 @@ function describeCardUse(use, youmay)
         carddesc = carddesc .. concatAnd(check[2], "or")
       elseif check[1] == "cost" then
         carddesc = carddesc .. sprintf("value %d or less", check[2])
+      elseif check[1] == "type" then
+        carddesc = carddesc .. concatAnd(check[2], "or")
       else
         carddesc = carddesc .. "(undescribed check)"
       end
@@ -280,7 +289,9 @@ function describeCardUse(use, youmay)
     carddesc = carddesc .. " "
   end
 
-  if use.count > 1 then
+  if use.count < 0 then
+    carddesc = sprintf("any number of %scards", carddesc)
+  elseif use.count > 1 then
     carddesc = sprintf("up to %d %scards", use.count, carddesc)
   else
     carddesc = sprintf("a %scard", carddesc)
@@ -301,8 +312,7 @@ function describeCardUse(use, youmay)
 end
 
 function createCardUse(obj, params)
-  -- carduses is newer version of recycle, scrapcycle, scrap,
-  -- discardfor, tradescrap, etc.
+  -- carduses is newer version of recycle, scrapcycle, scrap, discardfor, tradescrap, etc.
   --
   -- Format: It is a list of:
   -- {
@@ -426,6 +436,8 @@ function canUseCardUse(use, source, dest, card, obj)
           end
         end
         if not hasfac then return false end
+      elseif check[1] == "type" then
+        if not isMember(check[2], card.type) then return false end
       elseif check[1] == "cost" then
         if card.cost > check[2] then return false end
       else
@@ -753,40 +765,6 @@ function destroyEnemyBase(color, obj, is_damage, card)
   rebuildTargets()
 end
 
-function checkValidSourceList(source, lst, card)
-  -- This is primarily for scraps: S_HAND = HAND_OR_DISCARD or HAND_ONLY, etc.
-
-  -- Death world factions
-  local accept = {}
-  accept[HAND_OR_DISCARD] = true
-  if source == S_PLAYER_DISCARD then
-    accept[DISCARD_ONLY] = true
-  elseif source == S_HAND then
-    accept[HAND_ONLY] = true
-  else
-    return false
-  end
-
-  if card then
-    local dwokay = {}
-    dwokay[MC] = true
-    dwokay[TF] = true
-    dwokay[SE] = true
-    for _, fac in ipairs(card["factions"]) do
-      if dwokay[fac] then
-        accept[DEATHWORLD] = true
-      end
-    end
-  end
-
-  for _, val in ipairs(lst) do
-    if accept[val] then
-      return true
-    end
-  end
-  return false
-end
-
 function getPlayerCardUse(color, obj, source, dest)
   -- Thanks to the nonlinear nature of qdo: getPlayerCardUse is now
   -- used for both checking in UI (on click/pickup/etc) and
@@ -888,12 +866,6 @@ function getPlayerCardUseReal(color, obj, source, dest, isqdo)
         return false, "You must discard, first."
       end
       return true, doDiscardCard
-    elseif must[1] == "scrap" then
-      if not checkValidSourceList(source, must[2], card) then
-        return false, "You must scrap " .. describeScrapSource(must[2])
-      end
-      if (dest ~= S_SCRAP and dest ~= nil) then return false end
-      return true, doScrapCardMust
     elseif must[1] == "draw" then
       -- player clicked faster than cards settled so they could draw.
       -- Force an updatePlayState so they must draw.
@@ -936,16 +908,6 @@ function getPlayerCardUseReal(color, obj, source, dest, isqdo)
   if not acceptable[obj.getDescription()] then
     return false, "Not your card"
   end
-  -- Now check the player's "mays" - scrap (from events) is probably the only
-  -- one that will apply to out of turn players, so we check that first.
-
-  if #mays["scrap"] > 0 then
-    if dest == nil or dest == S_SCRAP then
-      if checkValidSourceList(source, mays["scrap"], card) then
-        return true, doScrapCard
-      end
-    end
-  end
 
   -- Everything after this is only for current players or team
   if not isPlaying(color) then
@@ -958,34 +920,11 @@ function getPlayerCardUseReal(color, obj, source, dest, isqdo)
   end
   local psi = getPlayState(color, "interactables")
 
-  -- Discard for resources
-  if ((dest == S_DISCARD or dest == nil)
-      and source == S_HAND) then
-    local discardfors = mays["discardfor"]
-    if discardfors and #discardfors > 0 then
-      return true, doDiscardFor
-    end
-  end
-
   if (source == S_TRADE or source == S_EXPLORER) then
-    local possible = nil
-    if source == S_TRADE and mays["tradescrap"] > 0 then
-      possible = doScrapTradeCard
-      if dest == S_SCRAP then
-        return true, doScrapTradeCard
-      end
-    end
-
     if canBuy(color, obj) then
-      possible = doBuyCard
-      if dest == S_PLAY or dest == S_PLAYER or dest == S_AUTO then
+      if dest == nil or dest == S_PLAY or dest == S_PLAYER or dest == S_AUTO then
         return true, doBuyCard
       end
-    end
-
-    -- Just picking it up, but might be able to do something?
-    if dest == nil and possible ~= nil then
-      return true, possible
     end
 
     -- No trade cards for you, sir!
@@ -1009,39 +948,13 @@ function getPlayerCardUseReal(color, obj, source, dest, isqdo)
     return false, nil
   end
 
-  if source == S_HAND and dest == S_DISCARD or dest == S_PLAYER_DISCARD then
-    if mays["recycle"] > 0 then
-      return true, doRecycleCard
-    end
-    return false, "No recycling available."
-  end
-
   if source == S_PLAYER_DECK then
     return false, "Playing from deck?"
-  end
-
-  if source == S_PLAYER_DISCARD then
-    -- Only if we can.
-    if checkValidSourceList(source, mays["scrap"], card) then
-      if dest == nil or dest == S_SCRAP then
-        return true, doScrapCard
-      end
-    end
-
-    return false, "No playing from discard!"
   end
 
   -- Anything from player's hand is "play"able, as long as dest is nil.
   if source == S_HAND and dest == nil then
     return true, doPlayCard
-  end
-
-  if source == S_HAND and dest == S_SCRAP then
-    -- Only if we can.
-    if checkValidSourceList(source, mays["scrap"], card) then
-      return true, doScrapCard
-    end
-    return false, "Cannot scrap"
   end
 
   -- Scrappable
@@ -1087,8 +1000,10 @@ function doCardUseMust(color, obj, source, dest, origstate)
     return die("doCardUseMust with invalid canUseCardUse?")
   end
   applyCardUse(color, must[2], source, dest, card, obj)
-  must[2].count = must[2].count - 1
-  if must[2].count < 1 then
+  if must[2].count > 0 then
+    must[2].count = must[2].count - 1
+  end
+  if must[2].count == 0 then
     table.remove(musts, 1)
   end
 end
@@ -1119,6 +1034,7 @@ function doCardUseMay(color, obj, source, dest, origstate, id)
       end
     })
     askQuestion(obj.getGUID(), color, card.name, choices)
+    return
   end
 
   local selectedUse = uses[1]
@@ -1130,8 +1046,10 @@ function doCardUseMay(color, obj, source, dest, origstate, id)
     end
   end
 
-  selectedUse.count = selectedUse.count - 1
-  if selectedUse.count < 1 then
+  if selectedUse.count > 0 then
+    selectedUse.count = selectedUse.count - 1
+  end
+  if selectedUse.count == 0 then
     local toremove = nil
     for idx, use in ipairs(mays.carduses) do
       if use == selectedUse then
@@ -1291,32 +1209,6 @@ function doApplyInteraction(color, obj, why, effects, idx)
   end
 end
 
-function doDiscardFor(color, obj, source, dest, origstate)
-  local pinfo = GAMESTATE["players"][color]
-  local discardfors = pinfo["mays"]["discardfor"]
-
-  if not (discardfors and #discardfors > 0) then
-    return die("doDiscardFor called without discardfor effects?")
-  end
-
-  local def = table.remove(discardfors, 1)
-  local fromguid = def[1]
-  local effs = def[2]
-
-  if isScrapped(fromguid) then
-    return die("Scrapped a discardfor provider?")
-  end
-
-  local fromobj = getObjectFromGUID(fromguid)
-  local card = ALL_CARDS[fromobj.getName()]
-
-  announce(color, "discarded %s", obj.getName())
-
-  applyEffects(color, fromobj, card, effs, fromobj.getPosition(), "discarded for", false)
-
-  discardAllCards(color, {obj})
-end
-
 function doDiscardCard(color, obj, source, dest, origstate)
   local pinfo = GAMESTATE["players"][color]
   local musts = pinfo["musts"]
@@ -1352,26 +1244,6 @@ function doScrapCardForEffects(color, obj, source, dest, origstate)
   end
 end
 
-function doScrapTradeCard(color, obj, source, dest, origstate)
-  local guid = obj.getGUID()
-  local pinfo = GAMESTATE["players"][color]
-  pinfo["mays"]["tradescrap"] = pinfo["mays"]["tradescrap"] - 1
-  addTag(color, "tradescrap", "Scrap trade")
-  announce(color, "scrapped %s from the trade row", obj.getName())
-  sendCardToScrap(color, obj)
-  refreshTradeOptions(guid)
-end
-
-function doRecycleCard(color, obj, source, dest, origstate)
-  local pinfo = GAMESTATE["players"][color]
-  pinfo["mays"]["recycle"] = pinfo["mays"]["recycle"] - 1
-  logEffect(color, obj.getName(), "recycled")
-
-  announce(color, "recycles %s to draw a card", obj.getName())
-  discardAllCards(color, {obj})
-  addMust(color, "draw", 1)
-end
-
 function doAcquireFreeCard(color, giver, dest, sels)
   local psi = getPlayState(color, "interactables")
   local guid = giver.getGUID()
@@ -1392,89 +1264,6 @@ function doBuyCard(color, obj, source, dest, origstate)
   doBuy(color, obj, true, TO_DISCARD)
 end
 
-function removeScrapTargetFromList(source, list, obj)
-  local accept = {}
-
-  -- First, check for deathworld
-  local dwokay = {}
-  local card = ALL_CARDS[obj.getName()]
-  dwokay[MC] = true
-  dwokay[TF] = true
-  dwokay[SE] = true
-  for _, fac in ipairs(card["factions"]) do
-    if dwokay[fac] then
-      accept[DEATHWORLD] = true
-    end
-  end
-
-  -- Prioritize, if we have a few "hand or discard" and one "hand only",
-  -- prefer "hand only" for hands, and vice versa for discard.
-  accept[HAND_OR_DISCARD] = true
-
-  local desired = HAND_ONLY
-  if source ~= S_HAND then
-    desired = DISCARD_ONLY
-  end
-
-  accept[desired] = true
-
-  local using = nil
-  local rest = {}
-
-  local beats = function(a,b)
-    if a == nil then return false end
-    if b == nil then return true end
-    if b == DEATHWORLD then return false end
-    if a == DEATHWORLD then return true end
-    if b == desired then return false end
-    if a == desired then return true end
-    return false
-  end
-
-  -- DEATHWORLD > desired > hand_or_discard
-  for _, what in ipairs(list) do
-    if accept[what] and beats(what, using) then
-      if using then
-        rest[#rest+1] = using
-      end
-      using = what
-    else
-      rest[#rest+1] = what
-    end
-  end
-
-  if not using then
-    return die("removescraptarget called when it shouldn't be?")
-  end
-
-  return rest
-end
-
-function doScrapCardMust(color, obj, source, dest, origstate)
-  local musts = GAMESTATE["players"][color]["musts"]
-
-  local mustscrap = musts[1]
-  if mustscrap[1] ~= "scrap" then
-    return die("doScrapCardMust called when no scrap in must?")
-  end
-
-  announce(color, "scrapped %s (required)", obj.getName())
-  if source == S_HAND then
-    addTag(color, "scrap:handordiscard", "Scrapped from hand")
-  elseif source == S_PLAYER_DISCARD then
-    addTag(color, "scrap:handordiscard", "Scrapped from discard pile")
-  else
-    addTag(color, "scrap:handordiscard", "Scrapped a card")
-  end
-
-  mustscrap[2] = removeScrapTargetFromList(source, mustscrap[2], obj)
-  if #mustscrap[2] < 1 then
-    table.remove(musts, 1)
-  end
-
-  sendCardToScrap(color, obj)
-end
-
 function sendCardToScrap(color, obj)
   local owner = obj.getDescription()
   if owner ~= "T" and owner ~= "X" then
@@ -1484,23 +1273,6 @@ function sendCardToScrap(color, obj)
     GAMESTATE["players"][color]["card_count"] = expected - 1
   end
   destroyCard(obj)
-end
-
-function doScrapCard(color, obj, source, dest, origstate)
-  local mays = GAMESTATE["players"][color]["mays"]
-
-  logEffect(color, obj.getName(), "scrapped")
-  mays["scrap"] = removeScrapTargetFromList(source, mays["scrap"], obj)
-  if source == S_HAND then
-    addTag(color, "scrap:handordiscard", "Scrapped from hand")
-  elseif source == S_PLAYER_DISCARD then
-    addTag(color, "scrap:handordiscard", "Scrapped from discard pile")
-  else
-    addTag(color, "scrap:handordiscard", "Scrapped a card")
-  end
-
-  announce(color, "scrapped %s", obj.getName())
-  sendCardToScrap(color, obj)
 end
 
 function updatePlayStateNow(doapply)

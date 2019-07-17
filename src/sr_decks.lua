@@ -22,7 +22,6 @@ function getCardsOfDecks(decks)
   local cardcount = 0
   local allcards = {}
   for _, deckname in ipairs(decks) do
-    printf("deckname: %s", deckname)
     for _, cardname in ipairs(DECKS[deckname]) do
       cardcount = cardcount + 1
       allcards[cardcount] = cardname

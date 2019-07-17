@@ -122,11 +122,6 @@ function newMays()
   return {
     carduses = {},
     destroybase = 0,
-
-    recycle = 0,
-    scrap = {},
-    discardfor = {},
-    tradescrap = 0,
   }
 end
 

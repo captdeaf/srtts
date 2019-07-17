@@ -105,14 +105,6 @@ S_PLAYER = "in play (your area)"
 S_AUTO = "auto-play"
 S_UNKNOWN = "unknown"
 
--- "scrap sources". Probably going away or changing to become a list of
--- S_ sources and a filter list (for deathworld/etc)
-HAND_OR_DISCARD = "hand or discard pile"
-HAND_ONLY = "hand"
-DISCARD_ONLY = "discard pile"
-DEATHWORLD = "hand or discard pile that is machine cult, trade fed, or star empire"
-
-
 -- Destinations: When cards are purchased, where do they go?
 TO_DISCARD = "to discard"
 TO_TOP = "to top of deck"

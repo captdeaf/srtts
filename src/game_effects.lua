@@ -1,78 +1,57 @@
+USE_TEMPLATES = {}
 
-function describeScrapSource(lst)
-  local total = 0
-  local counts = {}
-  counts[HAND_ONLY] = 0
-  counts[DISCARD_ONLY] = 0
-  counts[HAND_OR_DISCARD] = 0
-  counts[DEATHWORLD] = 0
-  local first = lst[1]
+USE_TEMPLATES["mustuse"] = {
+  must = true,
+}
 
-  if not lst or #lst == 0 or not first or counts[first] ~= 0 then
-    die("Invalid describeScrapSource format?")
-    return "(Bugged describe scrap source format)"
-  end
+USE_TEMPLATES["mayuse"] = {}
 
-  for _, v in ipairs(lst) do
-    counts[v] = counts[v] + 1
-    total = total + 1
-  end
+USE_TEMPLATES["mustscrap"] = {
+  must = true,
+  id = "scrap",
+  to = TO_SCRAP,
+  count = 1,
+  cardmessage = "scraps %s",
+}
 
-  if counts[first] == total then
-    local desc = "a card"
-    if total > 1 then
-      desc = sprintf("%d cards", total)
-    end
+USE_TEMPLATES["tradescrap"] = {
+  from = {S_TRADE},
+  id = "scrap",
+  to = TO_SCRAP,
+  count = 1,
+  cardmessage = "scraps %s from trade",
+}
 
-    if first == HAND_ONLY then
-      return desc .. " from your hand"
-    elseif first == HAND_OR_DISCARD then
-      return desc .. " from your hand or discard pile"
-    elseif first == DISCARD_ONLY then
-      return desc .. " from your discard pile"
-    elseif first == DEATHWORLD then
-      return oneormore(total, "a non-blob faction card from hand or discard pile", "%d non-blob faction cards from hand or discard pile")
-    elseif first == S_TRADE then
-      return oneormore(total, "a card from the trade row", "%d cards from the trade row")
-    end
-  end
+USE_TEMPLATES["mayscrap"] = {
+  id = "scrap",
+  to = TO_SCRAP,
+  count = 1,
+  cardmessage = "scraps %s",
+}
 
-  -- This in theory should only happen with "mays" and Playing
-  -- multiple MC cards. Never with "musts"
-  local ret = {}
-  if counts[HAND_ONLY] > 0 then
-    if counts[HAND_ONLY] == 1 then
-      ret[#ret+1] = "1 card from your hand"
-    else
-      ret[#ret+1] = sprintf("%d cards from your hand", counts[HAND_ONLY])
-    end
-  end
-  if counts[DISCARD_ONLY] > 0 then
-    if counts[DISCARD_ONLY] == 1 then
-      ret[#ret+1] = "1 card from your discard pile"
-    else
-      ret[#ret+1] = sprintf("%d cards from your discard pile", counts[DISCARD_ONLY])
-    end
-  end
-  if counts[HAND_OR_DISCARD] > 0 then
-    if counts[HAND_OR_DISCARD] == 1 then
-      ret[#ret+1] = "1 card from either your hand or discard pile"
-    else
-      ret[#ret+1] = sprintf("%d cards from either your hand or discard pile", counts[HAND_OR_DISCARD])
-    end
-  end
-  if counts[DEATHWORLD] > 0 then
-    if counts[DEATHWORLD] == 1 then
-      ret[#ret+1] = "1 non-blob faction card from either your hand or discard pile"
-    else
-      ret[#ret+1] = sprintf("%d non-blob faction cards from either your hand or discard pile", counts[DEATHWORLD])
-    end
-  end
-  if counts[S_TRADE] > 0 then
-    ret[#ret+1] = oneormore(counts[S_TRADE], "a card from the trade row", "%d cards from the trade row")
-  end
-  return table.concat(ret, ", ")
-end
+USE_TEMPLATES["scrapcycle"] = {
+  from = {S_HAND},
+  to = TO_SCRAP,
+  count = 1,
+  cardmessage = "scraps %s",
+  effects = {draw=1},
+}
+
+USE_TEMPLATES["recycle"] = {
+  id = "recycle",
+  from = {S_HAND},
+  to = TO_DISCARD,
+  count = 1,
+  cardmessage = "recycles %s",
+  effects = {draw=1},
+}
+
+USE_TEMPLATES["discardtotop"] = {
+  to = TO_TOP,
+  from = {S_PLAYER_DISCARD},
+  cardmessage = "moves %s to top of deck",
+  id = "discardttop",
+}
 
 function describeEffects(effects, cardname)
   local ret = {}
@@ -114,34 +93,16 @@ function describeEffects(effects, cardname)
     done["mustdiscard"] = true
     append("discard %d cards", effects["mustdiscard"])
   end
-  if effects["tradescrap"] then
-    done["tradescrap"] = true
-    append("scrap %d cards from the trade row", effects["tradescrap"])
-  end
   if effects["choose"] then
     local opts = mapList(effects["choose"], function(e) return describeEffects(e, cardname) end)
     append("choose between: %s", concatAnd(opts, "or"))
     done["choose"] = true
-  end
-  if effects["mustscrap"] then
-    done["mustscrap"] = true
-    append("must scrap " .. describeScrapSource(effects["mustscrap"]))
-  end
-  if effects["mayscrap"] then
-    done["mayscrap"] = true
-    append("may scrap " .. describeScrapSource(effects["mayscrap"]))
   end
   if effects["uniq"] then
     done["uniq"] = true
     local u = effects["uniq"]
     if u[1] == "blobworld" then
       append("draw 1 card for every blob card played.")
-    elseif u[1] == "recycle" then
-      append("recycle up to %d cards", u[2])
-    elseif u[1] == "scrapforcostdamage" then
-      append("scrap %d cards from %s for their cost in damage", concatAnd(u[2].from, "or"))
-    elseif u[1] == "scrapcycle" then
-      append("scrap up to %d cards from %s for %s each", u[2].count, u[2].from[1], describeEffects(u[2].effects))
     else
       append("unique '%s' effect (not added to describe yet)", effects["uniq"][1])
     end
@@ -153,6 +114,14 @@ function describeEffects(effects, cardname)
   if effects["oppdiscard"] then
     done["oppdiscard"] = true
     append(oneormore(effects["oppdiscard"], "target opponent discards a card", "target opponent discards %d cards"))
+  end
+  for k, v in pairs(USE_TEMPLATES) do
+    if effects[k] then
+      done[k] = true
+      local params = duplicate(v)
+      params = mergeTables({params, effects[k]})
+      append(describeCardUse(params))
+    end
   end
 
   for k, _ in pairs(effects) do
@@ -310,8 +279,8 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
   -- destroybase=1: Destroy target base
   -- tradescrap=2: Scrap up to 2 cards in trade row
   -- choose={{t=2},{a=2}}: Pick between 2 trade or 2 authority
-  -- mayscrap={HAND_ONLY, HAND_ONLY}: May Scrap 2 cards from hand
-  -- mustscrap={HAND_ONLY, HAND_ONLY}: Must Scrap 2 cards from hand
+  -- mayscrap={HAND_ONLY, 2}: May Scrap 2 cards from hand
+  -- mustscrap={HAND_ONLY, 1}: Must Scrap 1 card from hand
   -- oppdiscard=1: Opponent discards 1
 
   if effects["onactivate"] then
@@ -352,30 +321,10 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
     done["choose"] = true
   end
 
-  if effects["tradescrap"] then
-    done["tradescrap"] = true
-    pinfo["mays"]["tradescrap"] = pinfo["mays"]["tradescrap"] + effects["tradescrap"]
-    logEffect(color, cardname, "may scrap %d trade cards", effects["tradescrap"])
-  end
-
-  if effects["mayscrap"] then
-    done["mayscrap"] = true
-    for _, val in ipairs(effects["mayscrap"]) do
-      table.insert(pinfo["mays"]["scrap"], val)
-    end
-    logEffect(color, cardname, "may scrap %s", describeScrapSource(effects["mayscrap"]))
-  end
-
   if effects["destroybase"] then
     done["destroybase"] = true
     pinfo["mays"]["destroybase"] = pinfo["mays"]["destroybase"] + effects["destroybase"]
     logEffect(color, cardname, oneormore(effects["destroybase"], "may destroy a base", "may destroy %d bases"))
-  end
-
-  if effects["mustscrap"] then
-    done["mustscrap"] = true
-    addMust(color, "scrap", effects["mustscrap"])
-    logEffect(color, cardname, "must scrap %s", describeScrapSource(effects["mustscrap"]))
   end
 
   if effects["mustdiscard"] then
@@ -384,46 +333,29 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
     logEffect(color, cardname, "must discard %d", effects["mustdiscard"])
   end
 
+  for k, v in pairs(USE_TEMPLATES) do
+    if effects[k] then
+      done[k] = true
+      local params = duplicate(v)
+      mergeTables({params, effects[k]})
+      if v.must then
+        addMustUse(color, obj, params)
+      else
+        addMayUse(color, obj, params)
+      end
+    end
+  end
+
   if effects["uniq"] then
     local uparams = effects["uniq"]
     local uwhat = uparams[1]
-    if uwhat == "recycle" then
-      pinfo["mays"]["recycle"] = pinfo["mays"]["recycle"] + uparams[2]
-      logEffect(color, cardname, "may recycle %d cards", uparams[2])
-      done["u.recycle"] = true
-    elseif uwhat == "blobworld" then
+    if uwhat == "blobworld" then
       local count = getTag(color, "play:bb")
       announce(color, oneormore(count, "draws a card", "draws %d cards") .. " (".. cardname .. ")")
       if count > 0 then
         addMust(color, "draw", count)
       end
       done["u.blobworld"] = true
-    elseif uwhat == "scrapcycle" then
-      local params = duplicate(uparams[2])
-      params.to = TO_SCRAP
-      params.cardmessage = "scrapcycles %s"
-      params.id = "scrapcycle"
-      addMayUse(color, obj, params)
-      done["u.scrapcycle"] = true
-    elseif uwhat == "scrapforcostdamage" then
-      addMayUse(color, obj, {
-
-      })
-    elseif uwhat == "discardfor" then
-      local count = uparams[2]
-      local effs = uparams[3]
-      if pinfo["mays"]["discardfor"] == nil then
-        pinfo["mays"]["discardfor"] = {}
-      end
-      for i=1,count,1 do
-        table.insert(pinfo["mays"]["discardfor"], {obj.getGUID(), effs})
-      end
-      if count < 20 then
-        logEffect(color, cardname, "may discard up to %d cards to %s", count, describeEffects(effs, cardname))
-      else
-        logEffect(color, cardname, "may discard any number of cards to %s", count, describeEffects(effs, cardname))
-      end
-      done["u.discardfor"] = true
     elseif uwhat == "freecard" then
       interactions["freecard"] = uparams
       done["u.freecard"] = true
@@ -433,14 +365,6 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
     elseif uwhat == "mayreturn" then
       interactions["mayreturn"] = uparams
       done["u.mayreturn"] = true
-    elseif uwhat == "discardtotop" then
-      local params = duplicate(uparams[2])
-      params.to = TO_TOP
-      params.from = {S_PLAYER_DISCARD}
-      params.cardmessage = "moves %s to top of deck"
-      params.id = "discardtotop"
-      addMayUse(color, obj, params)
-      done["u.discardtotop"] = true
     elseif uwhat == "nextbuyto" then
       -- Hrmmmmmm... next card, next ship, next base.
       -- ANY clears SHIP and BASES.
@@ -572,26 +496,6 @@ function describeMays(mays)
       "You may destroy %d enemy bases."
     ))
   end
-  if mays["recycle"] > 0 then
-    table.insert(rets, oneormore(mays["recycle"],
-      "You may recycle a card",
-      "You may recycle up to %d cards"
-    ))
-  end
-  if #mays["scrap"] > 0 then
-    table.insert(rets, "You may scrap " .. describeScrapSource(mays["scrap"]))
-  end
-  if mays["tradescrap"] > 0 then
-    table.insert(rets,oneormore(mays["tradescrap"],
-      "You may scrap a card from the trade row",
-      "You may scrap %d cards from the trade row"
-    ))
-  end
-  if #mays["discardfor"] > 0 then
-    for _, val in ipairs(mays["discardfor"]) do
-      table.insert(rets, sprintf("You may discard a card for %s", describeEffects(val[2]), "discardfor"))
-    end
-  end
   for _, use in ipairs(mays["carduses"]) do
     table.insert(rets, describeCardUse(use, "You may"))
   end
@@ -662,8 +566,6 @@ function describeMusts(musts)
   local must = musts[1]
   if must[1] == "discard" then
     ret = "Discard " .. tostring(must[2]) .. " cards."
-  elseif must[1] == "scrap" then
-    ret = "Scrap " .. describeScrapSource(must[2])
   elseif must[1] == "carduse" then
     ret = describeCardUse(must[2], "You must")
   end

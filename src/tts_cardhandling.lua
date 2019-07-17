@@ -275,10 +275,10 @@ function mergeMays(lst)
   if #lst == 1 then return lst[1] end
 
   for _, may in ipairs(lst) do
-    for _, counter in ipairs({"destroybase", "recycle", "tradescrap"}) do
+    for _, counter in ipairs({"destroybase"}) do
       mays[counter] = mays[counter] + may[counter]
     end
-    for _, tbl in ipairs({"carduses", "scrap", "discardfor"}) do
+    for _, tbl in ipairs({"carduses", "scrap"}) do
       for _, val in ipairs(may[tbl]) do
         table.insert(mays[tbl], val)
       end
@@ -341,18 +341,6 @@ function highlightInteractables()
             return die("Invalid interactables?")
           end
         end
-      end
-    end
-
-    -- Individual scrap piles.
-    if GAMESTATE["players"][color]["mays"]["mayscrap"] and
-      checkValidSourceList(S_PLAYER_DISCARD, mays["mayscrap"]) then
-
-      local pdata = PDATA[color]
-      local discard = getPlayerDeckAt(color, pdata["discardloc"], false)
-
-      if discard then
-        discard.highlightOn(COLORS["SCRAPPABLE"])
       end
     end
   end
