@@ -23,7 +23,7 @@ CARDASSETS = {
       "Star Fortress", "Spike Pod", "Patrol Bot", "Death World", "Customs Frigate",
       "Cargo Launch", "Capitol World", "Border Fort", "CEO Torres", "Special Ops Director",
 
-      "High Priest Lyle", "War Elder", "Blob Overlord", "Ram Pilot", "Admiral Rasmussen",
+      "High Priest Lyle", "War Elder", "Blob Overlord", "Ram Pilot", "Admiral Rasmusson",
       "Cunning Captain", "Supernova", "Warp Jump", "Trade Mission",
     },
   },

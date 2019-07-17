@@ -158,12 +158,18 @@ function sanityCheckDecks()
       end
     end
   end
-  if hasAny(MISSING_CARDS) then
-    -- AVAILABLE_DECKS must all be valid and have nothing missing.
-    for _, ad in ipairs(AVAILABLE_DECKS) do
-      if MISSING_CARDS[ad.name] then
-        die("Deck %s marked available has missing cards!", ad.name)
+  -- AVAILABLE_DECKS must all be valid and have nothing missing.
+  for _, ad in ipairs(AVAILABLE_DECKS) do
+    if not DECKS[ad.name] then
+      die("Deck %s does not exist in DECKS?", ad.name)
+    end
+    if MISSING_CARDS[ad.name] then
+      local cnames = {}
+      for v in pairs(MISSING_CARDS[ad.name]) do
+        table.insert(cnames, v)
       end
+      die("Deck %s marked available has missing cards: %s!",
+          ad.name, table.concat(cnames, ","))
     end
   end
 end

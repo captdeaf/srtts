@@ -2,9 +2,7 @@
 -- saves are distributed with save states? Overridden by the start menu,
 -- unless there is a VERSION mismatch.
 MENU_CHOICES = {
-  decks = {
-    ["Core"] = 1,
-  },
+  decks = {},
   houserules = {
     ["Free for All"] = true,
   },

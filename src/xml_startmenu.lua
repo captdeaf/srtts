@@ -360,7 +360,7 @@ function createXMLRulesMenu()
       resizeTextForBestFit="false",
       color="#000000",
       alignment="UpperCenter",
-      fontSize=18,
+      fontSize=12,
     }, false),
   })
 

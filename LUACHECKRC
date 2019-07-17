@@ -52,6 +52,7 @@ globals = {
   "convertCustomCardnames",
   "loadCardAssets",
   "sanityCheckDecks",
+  "printMissingCards",
   "checkCardInfo",
   "makeDeckJSON",
   "getSeatedPlayers",

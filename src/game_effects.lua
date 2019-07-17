@@ -32,6 +32,8 @@ function describeScrapSource(lst)
       return desc .. " from your discard pile"
     elseif first == DEATHWORLD then
       return oneormore(total, "a non-blob faction card from hand or discard pile", "%d non-blob faction cards from hand or discard pile")
+    elseif first == S_TRADE then
+      return oneormore(total, "a card from the trade row", "%d cards from the trade row")
     end
   end
 
@@ -66,6 +68,9 @@ function describeScrapSource(lst)
       ret[#ret+1] = sprintf("%d non-blob faction cards from either your hand or discard pile", counts[DEATHWORLD])
     end
   end
+  if counts[S_TRADE] > 0 then
+    ret[#ret+1] = oneormore(counts[S_TRADE], "a card from the trade row", "%d cards from the trade row")
+  end
   return table.concat(ret, ", ")
 end
 
@@ -77,14 +82,17 @@ function describeEffects(effects, cardname)
     local fmtstr = str:format(...)
     ret[#ret+1] = fmtstr
   end
-  -- Oh boy! This is the big game logic.
   if effects["t"] then
     done["t"] = true
     append("gain %d Trade", effects["t"])
   end
   if effects["d"] then
     done["d"] = true
-    append("gain %d Attack", effects["d"])
+    if effects.d == "cost" then
+      append("gain attack equal to cost")
+    else
+      append("gain %d Attack", effects["d"])
+    end
   end
   if effects["a"] then
     done["a"] = true
@@ -130,6 +138,10 @@ function describeEffects(effects, cardname)
       append("draw 1 card for every blob card played.")
     elseif u[1] == "recycle" then
       append("recycle up to %d cards", u[2])
+    elseif u[1] == "scrapforcostdamage" then
+      append("scrap %d cards from %s for their cost in damage", concatAnd(u[2].from, "or"))
+    elseif u[1] == "scrapcycle" then
+      append("scrap up to %d cards from %s for %s each", u[2].count, u[2].from[1], describeEffects(u[2].effects))
     else
       append("unique '%s' effect (not added to describe yet)", effects["uniq"][1])
     end
@@ -237,8 +249,10 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
     done["t"] = true
   end
   if effects["d"] then
-    local tot = tweakPlayState("damage", function(d) return d + effects["d"] end)
-    logEffect(color, cardname, "gained %d attack (%d)", effects["d"], tot)
+    local dam = effects["d"]
+    if dam == "cost" then dam = card.cost end
+    local tot = tweakPlayState("damage", function(d) return d + dam end)
+    logEffect(color, cardname, "gained %d attack (%d)", dam, tot)
     showIndicator(obj, "damage")
     done["d"] = true
   end
@@ -391,6 +405,10 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
       params.id = "scrapcycle"
       addMayUse(color, obj, params)
       done["u.scrapcycle"] = true
+    elseif uwhat == "scrapforcostdamage" then
+      addMayUse(color, obj, {
+
+      })
     elseif uwhat == "discardfor" then
       local count = uparams[2]
       local effs = uparams[3]
@@ -400,7 +418,11 @@ function applyEffects(color, obj, card, effects, position, issub, isnew, choice)
       for i=1,count,1 do
         table.insert(pinfo["mays"]["discardfor"], {obj.getGUID(), effs})
       end
-      logEffect(color, cardname, "may discard up to %d cards to: %s", count, describeEffects(effs, cardname))
+      if count < 20 then
+        logEffect(color, cardname, "may discard up to %d cards to %s", count, describeEffects(effs, cardname))
+      else
+        logEffect(color, cardname, "may discard any number of cards to %s", count, describeEffects(effs, cardname))
+      end
       done["u.discardfor"] = true
     elseif uwhat == "freecard" then
       interactions["freecard"] = uparams

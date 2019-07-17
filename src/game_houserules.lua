@@ -673,8 +673,10 @@ function checkRules()
   GAMESTATE["canstart"] = false
 
   local has_full_set = false
+-- AVAILABLE_DECKS = {
+  -- {name = "Core Set", count = 1, fullset=true},
   for _, v in ipairs(AVAILABLE_DECKS) do
-    if (MENU_CHOICES["decks"][v.name] or 0) > 1 then
+    if v.fullset and (MENU_CHOICES["decks"][v.name] or 0) > 0 then
       has_full_set = true
     end
   end

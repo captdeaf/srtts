@@ -160,7 +160,7 @@ addCommand("generatedecks", "Read in a CSV and spit out a deck listing") do
 
   alldecks = {}
   allcards.each do |card|
-    if ["Ship", "Base"].include?(card.type)
+    if ["Ship", "Base", "Hero"].include?(card.type)
       unless ["Scout", "Viper", "Explorer"].include?(card.name)
         alldecks[card.set] ||= []
         alldecks[card.set] += [card.name.chomp] * card.qty.to_i(10)

@@ -147,7 +147,7 @@ CARDDEFS = {
   { "Veteran Pilots", GAMBIT, {UA}, -1, {ontag={"play:Viper", {d=2}}}},
   { "Wild Gambit", GAMBIT, {UA}, -1, {onscrap={uniq={"wildgambit"}}}},
 
-  { "Admiral Rasmussen", HERO, {UA}, 2, {onscrap={draw=1, ally={SE}}}},
+  { "Admiral Rasmusson", HERO, {UA}, 2, {onscrap={draw=1, ally={SE}}}},
   { "Blob Overlord", HERO, {UA}, 2, {onscrap={d=4, ally={BB}}}},
   { "CEO Shaner", HERO, {UA}, 5, {onplay={ally={TF}, uniq={"freecard", {SHIP, OUTPOST, BASE}, 3, TO_TOP}}, onscrap={draw=1, ally={TF}}}},
   { "CEO Torres", HERO, {UA}, 2, {onscrap={a=7,ally={TF}}}},
@@ -245,7 +245,7 @@ CARDDEFS = {
   { "Unity Fighter", SHIP, {MC,BB}, 1, {d=3, tradescrap=1, onscrap={mayscrap={HAND_OR_DISCARD}}}},
   { "Viper", SHIP, {UA}, 0, {d=1}},
 
-  -- Frontier:
+  -- Frontiers:
   { "Blob Alpha", SHIP, {BB}, 6, {d=10}},
   { "Blob Miner", SHIP, {BB}, 2, {t=3, tradescrap=1, onscrap={d=2}}},
   { "Burrower", SHIP, {BB}, 3, {d=5, bb={draw=1}, onscrap={uniq={"freecard", {}, 4, TO_DISCARD}}}},
@@ -254,7 +254,7 @@ CARDDEFS = {
   { "Infested Moon", BASE, {BB}, 6, {def=5, d=4, bb={draw=1}, combo={{{bb=2}, {draw=1}}}}},
   { "Moonwurm Hatchling", SHIP, {BB}, 4, {choose={{t=3},{destroybase=1}}, bb={d=3}, combo={{{bb=2},{d=3}}}}},
   { "Nesting Ground", BASE, {BB}, 4, {def=5, t=2, bb={d=4}}},
-  { "Pulverizer", SHIP, {BB}, 5, {uniq={"scrapforcost", {from={S_TRADE}, effects={d=1}}}, bb={draw=1}}},
+  { "Pulverizer", SHIP, {BB}, 5, {uniq={"scrapcycle", {from={S_TRADE}, count=1, effects={d="cost"}}}, bb={draw=1}}},
   { "Spike Cluster", BASE, {BB}, 2, {def=3, d=2, bb={t=1}}},
   { "Stinger", SHIP, {BB}, 1, {d=3, bb={d=3}, onscrap={t=1}}},
   { "Swarm Cluster", BASE, {BB}, 8, {def=8, d=5, bb={d=3}, combo={{{bb=2}, {d=3}}}}},
@@ -266,7 +266,7 @@ CARDDEFS = {
   { "Enforcer Mech", SHIP, {MC}, 5, {d=5, mayscrap={HAND_OR_DISCARD}, mc={destroybase=1}, onscrap={draw=1}}},
   { "Integration Port", OUTPOST, {MC}, 3, {def=5, t=1}},
   { "Nanobot Swarm", SHIP, {MC}, 8, {d=5, draw=2, mayscrap={HAND_OR_DISCARD, HAND_OR_DISCARD}}},
-  { "Neural Nexus", OUTPOST, {MC}, 7, {def=6, uniq={"scrapforcost", {from={S_HAND, S_PLAYER_DISCARD}, effects={d=1}}},  mc={draw=1}}},
+  { "Neural Nexus", OUTPOST, {MC}, 7, {def=6, uniq={"scrapcycle", {from={S_HAND, S_PLAYER_DISCARD}, effects={d="cost"}}},  mc={draw=1}}},
   { "Plasma Bot", SHIP, {MC}, 2, {d=3, mayscrap={HAND_ONLY}, mc={d=2}}},
   { "Reclamation Station", OUTPOST, {MC}, 6, {def=6, mayscrap={DISCARD_ONLY}, onscrap={uniq="reclamation"}}},
   { "Repair Mech", SHIP, {MC}, 4, {choose={t=3, {uniq={"discardtotop", {check={"type", {BASE, OUTPOST}}}}}}, mc={mayscrap={HAND_OR_DISCARD}}}},

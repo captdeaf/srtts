@@ -9,7 +9,7 @@
 -- VERSION applies to structure of GAMESTATE and MENU_CHOICES.
 -- Any changes at all basically need to bump version so the previous save(s)
 -- won't cause errors.
-VERSION = 3
+VERSION = 5
 
 ----------
 -- GAMESTATES:

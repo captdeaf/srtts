@@ -15,7 +15,16 @@ Code for TTS handling:
   allies: track guids, and special cases for heroes.
   UI for trade row and moused-over card - screw ALT zoom!
   scrap "pile" - a card can be scrapped and regenerates in discard pile at end of turn.
+  Clear the Turn UI immediately on end turn, rather than waiting 'til after draw, etc.
 
+Frontiers:
+  combo ally effect
+  uniq: reclamationstation - 3 damage per scrapped card.
+  uniq: recoverme: Mobile Market returns to discard pile at end of turn if scrapped.
+  discardtotop check type
+  discardfor describe text: 100 "any number"
 
+DONE:
 
-
+  Frontiers:
+    uniq: scrapcycle for cost damage (scrap trade card for 1 damage per cost, or from hand or discard)
